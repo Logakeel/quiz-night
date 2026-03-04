@@ -679,7 +679,7 @@ function renderGame1Host(container) {
       <div class="tag tag-gold" style="font-family:Bebas Neue;font-size:1.1rem">${gs.mode?.toUpperCase()||''}</div>
       ${gs.mode!=='cash'
         ? `<div class="j1-answers fade-in">
-            ${answers.map(a => `<div class="answer-btn host-answer-clickable" onclick="clickAnswer1('${a.replace(/'/g,'\\'')}')" style="cursor:pointer">${a}</div>`).join('')}
+            ${answers.map(a => `<div class="answer-btn host-answer-clickable" onclick="clickAnswer1(this)" data-answer="${a.replace(/"/g,'&quot;')}" style="cursor:pointer">${a}</div>`).join('')}
            </div>
            <div class="instruction" style="margin-top:0.5rem">👆 Cliquez sur la réponse donnée par le joueur</div>`
         : `<div style="display:flex;flex-direction:column;align-items:center;gap:1rem">
@@ -732,31 +732,28 @@ window.confirmMode1=async function() {
 };
 
 // Appelé quand l'hôte clique sur une réponse
-window.clickAnswer1=async function(clickedAnswer) {
+window.clickAnswer1=async function(el) {
+  const clickedAnswer = el.dataset.answer;
   const gs=STATE.gameState;
   const Q=QUESTIONS.game1[gs.questionIdx||0];
   const correctAnswer = Q?.answers?.[Q?.correct??0]||'';
   const isCorrect = clickedAnswer === correctAnswer;
 
-  // Feedback visuel immédiat avant Firebase
   document.querySelectorAll('.host-answer-clickable').forEach(btn => {
-    const txt = btn.textContent.trim();
+    const txt = btn.dataset.answer;
     if (txt === clickedAnswer) {
       btn.classList.add(isCorrect ? 'correct' : 'wrong');
       btn.style.pointerEvents = 'none';
     } else if (txt === correctAnswer && !isCorrect) {
-      // Révèle la bonne réponse si le joueur s'est trompé
       setTimeout(() => btn.classList.add('correct'), 400);
     } else {
       btn.style.opacity = '0.4';
     }
   });
 
-  setTimeout(async () => {
-    await revealAnswer1(isCorrect);
-  }, 800);
+  setTimeout(async () => { await revealAnswer1(isCorrect); }, 800);
 };
-
+  
 window.revealAnswer1=async function(correct) {
   const gs={...STATE.gameState, phase:'reveal', lastCorrect:correct};
   await update(dbRef(rp()),{ gameState:gs });
