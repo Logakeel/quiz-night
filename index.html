@@ -357,6 +357,11 @@ const QUESTIONS = {
 // ══════════════════════════════════════
 const ACCESS_CODE = "soiree2026"; // ← Modifiez avant chaque soirée
 
+// ══════════════════════════════════════
+// 🛠️  MODE DEV — mettez false en prod !
+// ══════════════════════════════════════
+const DEV_MODE = true; // ← true = panneau de test visible, false = désactivé
+
 window.checkGate = function() {
   const val = document.getElementById('gate-input').value.trim();
   const err = document.getElementById('gate-error');
@@ -372,7 +377,7 @@ window.checkGate = function() {
     setTimeout(() => err.style.display = 'none', 3000);
   }
 };
-const DEV_MODE = true; // ← true = panneau de test visible, false = désactivé
+
 // ══════════════════════════════════════
 // STATE & UTILS
 // ══════════════════════════════════════
@@ -554,6 +559,7 @@ function renderDevPanel() {
 
 window.devJumpTo = async function(gameNum) {
   if (!DEV_MODE) return;
+  // Créer des faux joueurs si aucun
   if (Object.keys(STATE.players).length === 0) {
     const fakePlayers = {
       'p_alice': { name:'Alice', emoji:'🦁', score:8, ready:true },
@@ -592,6 +598,7 @@ async function addScore(pid, pts) {
 
 async function nextGame() {
   const next=STATE.currentGame+1;
+  // Afficher le scoreboard intermédiaire avant le prochain jeu
   await update(dbRef(rp()),{ currentGame:next, gameState:{ phase:'scoreboard', nextGame:next } });
 }
 
@@ -647,6 +654,7 @@ function renderGame1Host(container) {
 
   // ── PHASE 1 : afficher les réponses selon le mode ──
   } else if (gs.phase==='show-answers') {
+    // Les réponses sont stockées dans gs.shownAnswers pour garder le même ordre
     const answers = gs.shownAnswers || [];
     const correctAnswer = Q?.answers?.[Q?.correct ?? 0] || '';
     container.innerHTML=`
@@ -655,7 +663,7 @@ function renderGame1Host(container) {
       <div class="tag tag-gold" style="font-family:Bebas Neue;font-size:1.1rem">${gs.mode?.toUpperCase()||''}</div>
       ${gs.mode!=='cash'
         ? `<div class="j1-answers fade-in">
-            ${answers.map(a => `<div class="answer-btn host-answer-clickable" onclick="clickAnswer1('${a.replace(/'/g, "\\'")}')" style="cursor:pointer">${a}</div>`).join('')}
+            ${answers.map(a => `<div class="answer-btn host-answer-clickable" onclick="clickAnswer1('${a.replace(/'/g,'\\'')}')" style="cursor:pointer">${a}</div>`).join('')}
            </div>
            <div class="instruction" style="margin-top:0.5rem">👆 Cliquez sur la réponse donnée par le joueur</div>`
         : `<div style="display:flex;flex-direction:column;align-items:center;gap:1rem">
@@ -702,22 +710,26 @@ window.confirmMode1=async function() {
   if (!STATE.gameState.mode) return showToast('Choisissez un mode d\'abord','error');
   const gs=STATE.gameState;
   const Q=QUESTIONS.game1[gs.questionIdx||0];
+  // Générer et stocker l'ordre des réponses dans Firebase pour cohérence
   const shownAnswers = buildAnswersForMode(Q?.answers||[], gs.mode);
   await update(dbRef(rp()),{ gameState:{...gs, phase:'show-answers', shownAnswers} });
 };
-  
+
+// Appelé quand l'hôte clique sur une réponse
 window.clickAnswer1=async function(clickedAnswer) {
   const gs=STATE.gameState;
   const Q=QUESTIONS.game1[gs.questionIdx||0];
   const correctAnswer = Q?.answers?.[Q?.correct??0]||'';
   const isCorrect = clickedAnswer === correctAnswer;
 
+  // Feedback visuel immédiat avant Firebase
   document.querySelectorAll('.host-answer-clickable').forEach(btn => {
     const txt = btn.textContent.trim();
     if (txt === clickedAnswer) {
       btn.classList.add(isCorrect ? 'correct' : 'wrong');
       btn.style.pointerEvents = 'none';
     } else if (txt === correctAnswer && !isCorrect) {
+      // Révèle la bonne réponse si le joueur s'est trompé
       setTimeout(() => btn.classList.add('correct'), 400);
     } else {
       btn.style.opacity = '0.4';
@@ -728,6 +740,7 @@ window.clickAnswer1=async function(clickedAnswer) {
     await revealAnswer1(isCorrect);
   }, 800);
 };
+
 window.revealAnswer1=async function(correct) {
   const gs={...STATE.gameState, phase:'reveal', lastCorrect:correct};
   await update(dbRef(rp()),{ gameState:gs });
@@ -1027,12 +1040,12 @@ function renderScoreboardInline() {
 }
 
 // ══════════════════════════════════════
-// SCOREBOARD FINAL
+// SCOREBOARD INTERMÉDIAIRE
 // ══════════════════════════════════════
 function renderIntermediateScoreboard(container, nextGameNum) {
   const sorted = getPlayersSorted();
   const medals = ['🥇','🥈','🥉','4️⃣'];
-  const gameNames = ['','Duo/Carré/Cash','L\'Intrus','Sprint de réponses','4 à la suite'];
+  const gameNames = ['','Duo/Carré/Cash','L'Intrus','Sprint de réponses','4 à la suite'];
   const prevGame = (nextGameNum||2) - 1;
 
   container.innerHTML=`
@@ -1049,12 +1062,19 @@ function renderIntermediateScoreboard(container, nextGameNum) {
     </div>
     ${nextGameNum<=4
       ? `<div style="text-align:center;color:var(--muted);font-size:0.9rem">Prochain jeu : <strong style="color:var(--gold)">${gameNames[nextGameNum]||''}</strong></div>
-         <button class="btn btn-primary" style="max-width:300px" onclick="launchNextGame(${nextGameNum})">LANCER LE JEU ${nextGameNum} →</button>`
-      : `<button class="btn btn-primary" style="max-width:300px" onclick="launchNextGame(${nextGameNum})">VOIR LES RÉSULTATS FINAUX →</button>`
+         <button class="btn btn-primary" style="max-width:300px" onclick="launchNextGame(${nextGameNum})">
+           LANCER LE JEU ${nextGameNum} →
+         </button>`
+      : `<button class="btn btn-primary" style="max-width:300px" onclick="launchNextGame(${nextGameNum})">
+           VOIR LES RÉSULTATS FINAUX →
+         </button>`
     }
   `;
 }
-  
+
+// ══════════════════════════════════════
+// SCOREBOARD FINAL
+// ══════════════════════════════════════
 function renderFinalScoreboard(container) {
   const medals=['🥇','🥈','🥉','4️⃣'];
   container.innerHTML=`
@@ -1079,6 +1099,7 @@ function renderPlayerView(data) {
     content.innerHTML=`<div class="player-waiting text-center fade-in"><div class="player-waiting-icon">⏳</div><h2>EN ATTENTE</h2><p>L'hôte va lancer la partie…</p><div class="tag tag-gold" style="margin-top:1rem">${STATE.playerName}</div></div>`;
     return;
   }
+  // Scoreboard intermédiaire entre les jeux
   if (gs.phase==='scoreboard') { renderPlayerScoreboard(content, data, gs.nextGame); return; }
   if (game===5) { renderPlayerFinal(content, data); return; }
   if (game===1) renderPlayerGame1(content,gs,data);
@@ -1097,10 +1118,11 @@ function renderPlayerFinal(content, data) {
     <div style="font-size:1.5rem;font-family:Bebas Neue">${myScore} points</div>
   </div>`;
 }
-  
+
 function renderPlayerScoreboard(content, data, nextGameNum) {
   const players = Object.entries(data.players||{}).map(([id,p])=>({id,...p})).sort((a,b)=>b.score-a.score);
   const myPid = STATE.playerId;
+  const myRank = players.findIndex(p=>p.id===myPid)+1;
   const medals = ['🥇','🥈','🥉','4️⃣'];
   const gameNames = ['','Duo/Carré/Cash','L\'Intrus','Sprint de réponses','4 à la suite'];
   const prevGame = (nextGameNum||2)-1;
@@ -1112,7 +1134,7 @@ function renderPlayerScoreboard(content, data, nextGameNum) {
     </div>
     <div style="width:100%">
       ${players.map((p,i)=>`
-        <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.75rem;border-radius:0.5rem;background:${p.id===myPid?'rgba(245,200,66,0.1)':''};border:1px solid ${p.id===myPid?'var(--gold)':'var(--border)'};margin-bottom:0.4rem">
+        <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.75rem;border-radius:0.5rem;background:${p.id===myPid?'rgba(245,200,66,0.1)':''}; border:1px solid ${p.id===myPid?'var(--gold)':' var(--border)'};margin-bottom:0.4rem">
           <div style="font-family:Bebas Neue;font-size:1.2rem;color:var(--muted);width:1.5rem">${medals[i]||i+1}</div>
           <div style="font-size:1.2rem">${p.emoji}</div>
           <div style="flex:1;font-weight:${p.id===myPid?'600':'400'}">${p.name}${p.id===myPid?' (toi)':''}</div>
@@ -1125,7 +1147,7 @@ function renderPlayerScoreboard(content, data, nextGameNum) {
     }
   </div>`;
 }
-  
+
 function renderPlayerGame1(content, gs, data) {
   const pids=gs.playerOrder||Object.keys(data.players||{});
   const curPid=pids[gs.currentPlayerIdx%pids.length];
