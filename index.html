@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Night</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --border: #2a2a3d;
+    --gold: #f5c842;
+    --gold2: #e8a820;
+    --blue: #4a9eff;
+    --green: #3ddc84;
+    --red: #ff4d6d;
+    --purple: #9b5de5;
+    --text: #f0f0f5;
+    --muted: #6b6b88;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  h1,h2,h3,.title-font { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }
+
+  /* ── SETUP ── */
+  #setup-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:2rem; gap:2rem; }
+  .setup-title { font-size:clamp(3rem,8vw,6rem); color:var(--gold); text-align:center; }
+  .setup-subtitle { color:var(--muted); font-size:1rem; text-align:center; margin-top:-1.5rem; }
+  .setup-card { background:var(--surface); border:1px solid var(--border); border-radius:1rem; padding:2rem; width:100%; max-width:480px; display:flex; flex-direction:column; gap:1rem; }
+  .setup-card h2 { font-size:1.4rem; color:var(--gold); margin-bottom:0.5rem; }
+  .setup-input { background:var(--surface2); border:1px solid var(--border); border-radius:0.5rem; padding:0.75rem 1rem; color:var(--text); font-family:'DM Sans',sans-serif; font-size:1rem; width:100%; outline:none; transition:border-color 0.2s; }
+  .setup-input:focus { border-color:var(--gold); }
+  .btn { padding:0.85rem 2rem; border-radius:0.5rem; border:none; cursor:pointer; font-family:'Bebas Neue',sans-serif; letter-spacing:0.1em; font-size:1.1rem; transition:all 0.2s; width:100%; }
+  .btn-primary { background:var(--gold); color:#0a0a0f; }
+  .btn-primary:hover { background:var(--gold2); transform:translateY(-1px); }
+  .btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+  .btn-secondary:hover { border-color:var(--gold); color:var(--gold); }
+  .btn-sm { padding:0.5rem 1rem; font-size:0.9rem; width:auto; }
+  .btn-green { background:var(--green); color:#0a0a0f; font-family:'Bebas Neue'; letter-spacing:0.1em; }
+  .btn-red { background:var(--red); color:white; font-family:'Bebas Neue'; letter-spacing:0.1em; }
+  .divider { display:flex; align-items:center; gap:1rem; color:var(--muted); font-size:0.85rem; }
+  .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ── LOBBY ── */
+  .lobby-title { font-size:clamp(2.5rem,6vw,4rem); color:var(--gold); }
+  .room-code-display { background:var(--surface); border:2px dashed var(--gold); border-radius:1rem; padding:1rem 2rem; text-align:center; }
+  .room-code-label { font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; }
+  .room-code-value { font-size:2.5rem; font-family:'Bebas Neue'; color:var(--gold); letter-spacing:0.15em; }
+  .join-url { font-size:0.7rem; color:var(--muted); word-break:break-all; margin-top:0.3rem; }
+  .players-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:1rem; width:100%; max-width:600px; }
+  .player-card { background:var(--surface); border:1px solid var(--border); border-radius:0.75rem; padding:1.25rem 1rem; text-align:center; transition:border-color 0.3s; }
+  .player-card.active { border-color:var(--gold); }
+  .player-avatar { font-size:2rem; margin-bottom:0.5rem; }
+  .player-name { font-weight:600; font-size:0.95rem; }
+  .player-score { font-size:1.2rem; font-family:'Bebas Neue'; color:var(--gold); }
+  .player-empty { border-style:dashed; opacity:0.4; }
+
+  /* ── GAME HEADER ── */
+  .game-header { background:var(--surface); border-bottom:1px solid var(--border); padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; }
+  .game-title { font-size:1.5rem; color:var(--gold); }
+  .scores-bar { display:flex; gap:1.5rem; align-items:center; }
+  .score-item { text-align:center; }
+  .score-name { font-size:0.7rem; color:var(--muted); }
+  .score-pts { font-size:1.2rem; font-family:'Bebas Neue'; }
+  .score-pts.leader { color:var(--gold); }
+  .game-content { flex:1; display:flex; flex-direction:column; align-items:center; padding:2rem; gap:1.5rem; }
+  .game-badge { display:inline-flex; align-items:center; gap:0.5rem; background:var(--surface2); border:1px solid var(--border); border-radius:2rem; padding:0.4rem 1rem; font-size:0.85rem; color:var(--muted); }
+  .game-badge span { color:var(--gold); font-family:'Bebas Neue'; font-size:1rem; }
+
+  /* ── MEDIA ── */
+  .media-container { width:100%; max-width:600px; display:flex; flex-direction:column; align-items:center; gap:1rem; }
+  .question-image {
+    width:100%; max-width:500px; max-height:300px; object-fit:contain;
+    border-radius:0.75rem; border:1px solid var(--border);
+    background:var(--surface2); display:block;
+  }
+  .audio-player {
+    display:flex; align-items:center; gap:1rem;
+    background:var(--surface2); border:1px solid var(--border); border-radius:2rem;
+    padding:0.75rem 1.5rem; width:100%; max-width:400px;
+  }
+  .audio-play-btn {
+    width:44px; height:44px; border-radius:50%; background:var(--gold); border:none;
+    cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; transition:transform 0.15s;
+  }
+  .audio-play-btn:hover { transform:scale(1.08); }
+  .audio-play-btn.playing { background:var(--red); }
+  .audio-label { font-size:0.85rem; color:var(--muted); flex:1; }
+  .audio-progress { height:4px; background:var(--border); border-radius:2px; flex:1; overflow:hidden; }
+  .audio-progress-fill { height:100%; background:var(--gold); border-radius:2px; width:0%; transition:width 0.5s linear; }
+
+  /* ── JEU 1 ── */
+  .j1-question { font-size:clamp(1rem,2.5vw,1.4rem); text-align:center; max-width:700px; line-height:1.5; }
+  .j1-mode-btns { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; }
+  .mode-btn { padding:1rem 2rem; border-radius:0.75rem; border:2px solid var(--border); background:var(--surface); cursor:pointer; font-family:'Bebas Neue'; font-size:1.1rem; letter-spacing:0.1em; color:var(--text); transition:all 0.2s; text-align:center; }
+  .mode-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .mode-btn.selected { border-color:var(--gold); background:rgba(245,200,66,0.12); color:var(--gold); }
+  .mode-btn .pts { font-size:0.75rem; font-family:'DM Sans'; color:var(--muted); display:block; }
+  .j1-answers { display:grid; grid-template-columns:1fr 1fr; gap:1rem; width:100%; max-width:600px; }
+  .answer-btn { padding:1rem 1.5rem; border-radius:0.75rem; border:2px solid var(--border); background:var(--surface2); font-size:1rem; color:var(--text); transition:all 0.3s; text-align:left; }
+  .answer-btn.correct { border-color:var(--green); background:rgba(61,220,132,0.15); color:var(--green); }
+  .answer-btn.wrong { border-color:var(--red); background:rgba(255,77,109,0.1); opacity:0.5; }
+  .j1-host-controls { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; margin-top:0.5rem; }
+
+  /* ── JEU 2 ── */
+  .j2-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; width:100%; max-width:700px; }
+  .j2-answer { padding:1rem; border-radius:0.75rem; border:2px solid var(--border); background:var(--surface2); cursor:pointer; text-align:center; font-size:0.95rem; transition:all 0.3s; min-height:70px; display:flex; align-items:center; justify-content:center; }
+  .j2-answer:hover:not(.revealed):not(.wrong) { border-color:var(--blue); }
+  .j2-answer.revealed { opacity:0.3; border-color:var(--border); transform:scale(0.95); }
+  .j2-answer.wrong { border-color:var(--red); background:rgba(255,77,109,0.2); color:var(--red); font-weight:600; animation:shake 0.4s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+  /* ── JEU 3 ── */
+  .j3-timer { width:120px; height:120px; border-radius:50%; border:4px solid var(--border); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue'; font-size:3rem; color:var(--gold); background:var(--surface); }
+  .j3-timer.urgent { color:var(--red); border-color:var(--red); animation:pulse-red 1s infinite; }
+  @keyframes pulse-red { 0%,100%{box-shadow:none} 50%{box-shadow:0 0 20px rgba(255,77,109,0.4)} }
+  .j3-input { background:var(--surface2); border:2px solid var(--border); border-radius:0.75rem; padding:1rem 1.5rem; color:var(--text); font-family:'DM Sans'; font-size:1rem; width:100%; max-width:500px; outline:none; }
+  .j3-input:focus { border-color:var(--gold); }
+  .j3-answers-list { display:flex; flex-wrap:wrap; gap:0.5rem; max-width:600px; justify-content:center; }
+  .j3-tag { padding:0.4rem 0.9rem; border-radius:2rem; background:var(--surface2); border:1px solid var(--border); font-size:0.85rem; display:flex; align-items:center; gap:0.5rem; }
+  .j3-tag.valid { border-color:var(--green); color:var(--green); }
+  .j3-tag.invalid { border-color:var(--red); color:var(--red); text-decoration:line-through; opacity:0.6; }
+  .j3-validate-btn { padding:0.35rem 0.7rem; border-radius:1rem; border:none; cursor:pointer; font-size:0.75rem; font-family:'Bebas Neue'; }
+  .j3-validate-btn.ok { background:var(--green); color:#0a0a0f; }
+  .j3-validate-btn.ko { background:var(--red); color:white; }
+
+  /* ── JEU 4 ── */
+  .j4-themes { display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; width:100%; max-width:500px; }
+  .theme-btn { padding:1rem; border-radius:0.75rem; border:2px solid var(--border); background:var(--surface); cursor:pointer; font-family:'DM Sans'; font-size:0.95rem; color:var(--text); transition:all 0.2s; text-align:center; }
+  .theme-btn:hover { border-color:var(--purple); color:var(--purple); }
+  .theme-btn.selected { border-color:var(--purple); background:rgba(155,93,229,0.15); color:var(--purple); }
+  .j4-timer-bar { width:100%; max-width:500px; height:8px; background:var(--surface2); border-radius:4px; overflow:hidden; }
+  .j4-timer-fill { height:100%; background:var(--gold); border-radius:4px; transition:width 1s linear; }
+  .j4-timer-fill.low { background:var(--red); }
+  .j4-streak { font-family:'Bebas Neue'; font-size:1.1rem; color:var(--purple); }
+
+  /* ── SCOREBOARD ── */
+  .scoreboard { width:100%; max-width:500px; }
+  .score-row { display:flex; align-items:center; gap:1rem; padding:0.85rem 1rem; background:var(--surface); border-radius:0.75rem; margin-bottom:0.6rem; border:1px solid var(--border); transition:all 0.3s; }
+  .score-row:first-child { border-color:var(--gold); background:rgba(245,200,66,0.08); }
+  .score-rank { font-family:'Bebas Neue'; font-size:1.5rem; color:var(--muted); width:2rem; text-align:center; }
+  .score-row:first-child .score-rank { color:var(--gold); }
+  .score-emoji { font-size:1.5rem; }
+  .score-player-name { flex:1; font-weight:500; }
+  .score-pts-big { font-family:'Bebas Neue'; font-size:1.5rem; color:var(--gold); }
+
+  /* ── PLAYER ── */
+  .player-waiting { text-align:center; }
+  .player-waiting-icon { font-size:4rem; animation:bounce 2s infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  .player-waiting h2 { font-size:2rem; font-family:'Bebas Neue'; color:var(--gold); margin:1rem 0 0.5rem; }
+  .player-question-card { background:var(--surface); border:1px solid var(--border); border-radius:1rem; padding:2rem; width:100%; max-width:500px; display:flex; flex-direction:column; gap:1.5rem; }
+  .player-turn-badge { background:rgba(245,200,66,0.15); border:1px solid var(--gold); border-radius:0.5rem; padding:0.4rem 0.8rem; font-size:0.8rem; color:var(--gold); display:inline-block; width:fit-content; }
+
+  /* ── MISC ── */
+  .tag { padding:0.3rem 0.7rem; border-radius:2rem; font-size:0.75rem; font-weight:500; }
+  .tag-blue { background:rgba(74,158,255,0.15); color:var(--blue); border:1px solid rgba(74,158,255,0.3); }
+  .tag-gold { background:rgba(245,200,66,0.15); color:var(--gold); border:1px solid rgba(245,200,66,0.3); }
+  .section-title { font-family:'Bebas Neue'; font-size:1.8rem; color:var(--gold); text-align:center; }
+  .instruction { color:var(--muted); font-size:0.9rem; text-align:center; }
+  .text-center { text-align:center; }
+  .mt-1 { margin-top:0.5rem; }
+  .mt-2 { margin-top:1rem; }
+  .fade-in { animation:fadeIn 0.4s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); background:var(--surface); border:1px solid var(--border); border-radius:0.75rem; padding:0.75rem 1.5rem; font-size:0.9rem; z-index:999; animation:fadeIn 0.3s ease; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+  .toast.success { border-color:var(--green); color:var(--green); }
+  .toast.error { border-color:var(--red); color:var(--red); }
+
+  @media (max-width:500px) {
+    .j1-answers { grid-template-columns:1fr; }
+    .j2-grid { grid-template-columns:repeat(2,1fr); }
+    .j4-themes { grid-template-columns:1fr; }
+    .scores-bar { gap:0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup-screen">
+  <div>
+    <div class="setup-title">QUIZ NIGHT</div>
+    <div class="setup-subtitle">Le jeu de soirée ultime</div>
+  </div>
+  <div class="setup-card">
+    <h2>🎮 Créer une partie</h2>
+    <input class="setup-input" id="host-name" placeholder="Votre pseudo (hôte)" maxlength="20">
+    <button class="btn btn-primary" onclick="createRoom()">CRÉER LA PARTIE</button>
+    <div class="divider">ou</div>
+    <input class="setup-input" id="join-name" placeholder="Votre pseudo (joueur)" maxlength="20">
+    <input class="setup-input" id="join-code" placeholder="Code de la salle (ex: QUIZ-A1B2)" style="font-family:monospace" maxlength="10">
+    <button class="btn btn-secondary" onclick="joinRoom()">REJOINDRE</button>
+  </div>
+</div>
+
+<!-- LOBBY -->
+<div id="lobby-screen" style="display:none;flex-direction:column;align-items:center;min-height:100vh;padding:2rem;gap:2rem">
+  <div class="lobby-title">SALON D'ATTENTE</div>
+  <div class="room-code-display">
+    <div class="room-code-label">Partagez ce lien aux joueurs</div>
+    <div class="room-code-value" id="display-room-code">—</div>
+    <div class="join-url" id="display-join-url"></div>
+    <button class="btn btn-secondary btn-sm mt-1" onclick="copyJoinLink()" style="width:auto;margin-top:0.5rem">📋 Copier le lien</button>
+  </div>
+  <div style="color:var(--muted);font-size:0.9rem"><span id="player-count-label">0/4 joueurs</span></div>
+  <div class="players-grid" id="lobby-players"></div>
+  <button class="btn btn-primary" style="max-width:300px" onclick="startGame()">🚀 LANCER LA PARTIE</button>
+</div>
+
+<!-- GAME (HÔTE) -->
+<div id="game-screen" style="display:none;flex-direction:column;min-height:100vh">
+  <div class="game-header">
+    <div>
+      <div class="game-title" id="game-title">QUIZ NIGHT</div>
+      <div class="game-badge">Jeu <span id="game-index-display">1</span>/4</div>
+    </div>
+    <div class="scores-bar" id="header-scores"></div>
+  </div>
+  <div class="game-content" id="game-content"></div>
+</div>
+
+<!-- PLAYER -->
+<div id="player-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;gap:1.5rem">
+  <div id="player-content"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// ══════════════════════════════════════
+// ⚙️  CONFIGURATION FIREBASE
+// Remplacez par votre config sur https://console.firebase.google.com
+// ══════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyDW3uMTNfoK3Nzk5WIme3SEs4FvLKy1kwI",
+  authDomain: "quizzgamers-a15dd.firebaseapp.com",
+  databaseURL: "https://quizzgamers-a15dd-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "quizzgamers-a15dd",
+  storageBucket: "quizzgamers-a15dd.firebasestorage.app",
+  messagingSenderId: "372514225822",
+  appId: "1:372514225822:web:5fdd6cc34579cfa7a0458f"
+};
+
+// ══════════════════════════════════════
+// 📋  VOS QUESTIONS — Remplissez ici !
+// Copiez les URLs Firebase Storage après avoir uploadé vos fichiers
+// ══════════════════════════════════════
+const QUESTIONS = {
+  game1: [
+    // ── Format texte simple ──
+    {
+      text: "Quel est le plus grand océan du monde ?",
+      media_url: null,
+      media_type: null,   // null | 'image' | 'audio'
+      image_only: false,  // true = pas de texte, l'image EST la question
+      answers: ["Océan Pacifique", "Océan Atlantique", "Océan Indien", "Océan Arctique"],
+      correct: 0
+    },
+    // ── Format image + texte ──
+    {
+      text: "Quel monument est représenté ici ?",
+      media_url: "https://firebasestorage.googleapis.com/VOTRE_URL/monument.jpg",
+      media_type: "image",
+      image_only: false,
+      answers: ["La Tour Eiffel", "Big Ben", "La Sagrada Familia", "Le Colisée"],
+      correct: 0
+    },
+    // ── Format image seule (pas de texte) ──
+    {
+      text: "",
+      media_url: "https://firebasestorage.googleapis.com/VOTRE_URL/flag.jpg",
+      media_type: "image",
+      image_only: true,   // ← L'image remplace la question
+      answers: ["France", "Italie", "Belgique", "Luxembourg"],
+      correct: 0
+    },
+    // ── Format audio ──
+    {
+      text: "Quel instrument entendez-vous ?",
+      media_url: "https://firebasestorage.googleapis.com/VOTRE_URL/instrument.mp3",
+      media_type: "audio",
+      image_only: false,
+      answers: ["Violon", "Violoncelle", "Alto", "Contrebasse"],
+      correct: 0
+    },
+  ],
+
+  game2: [
+    // Round 1
+    {
+      question: "Capitales européennes (1 intrus)",
+      media_url: null,
+      media_type: null,
+      answers: ["Lyon","Paris","Berlin","Madrid","Rome","Lisbonne","Vienne","Amsterdam","Bruxelles"],
+      wrong_index: 0   // ← Index de la mauvaise réponse (Lyon n'est pas une capitale)
+    },
+    // Round 2 — avec image
+    {
+      question: "Logos de marques",
+      media_url: "https://firebasestorage.googleapis.com/VOTRE_URL/logos.jpg",
+      media_type: "image",
+      answers: ["Ikea","Apple","Google","Samsung","Microsoft","Amazon","Meta","Netflix","Pepsi"],
+      wrong_index: 8   // ← Pepsi est l'intrus si le logo n'est pas là
+    },
+    // Round 3
+    {
+      question: "Films Marvel (1 imposteur DC)",
+      media_url: null,
+      media_type: null,
+      answers: ["Batman Begins","Iron Man","Thor","Captain America","Avengers","Black Panther","Spider-Man","Doctor Strange","Ant-Man"],
+      wrong_index: 0
+    },
+  ],
+
+  game3: [
+    // Un objet par joueur (slot 0→3)
+    { question: "Citez le plus de pays d'Afrique possible", media_url: null, media_type: null },
+    { question: "Citez le plus de capitales européennes possible", media_url: null, media_type: null },
+    { question: "Citez le plus de Pokémon de feu possible", media_url: null, media_type: null },
+    { question: "Citez le plus de sports olympiques possible", media_url: null, media_type: null },
+  ],
+
+  game4: {
+    themes: [
+      { label: "🎬 Cinéma",     questions: [{ text:"Réalisateur de Titanic ?", answer:"James Cameron" },{ text:"Actrice d'Hermione Granger ?", answer:"Emma Watson" },{ text:"Film avec Mufasa ?", answer:"Le Roi Lion" },{ text:"Studio de Pixar ?", answer:"Disney/Pixar" }] },
+      { label: "🎵 Musique",    questions: [{ text:"Groupe qui chante Bohemian Rhapsody ?", answer:"Queen" },{ text:"Roi de la pop ?", answer:"Michael Jackson" },{ text:"Instrument d'Elton John ?", answer:"Piano" },{ text:"Daft Punk vient de ?", answer:"France" }] },
+      { label: "⚽ Sport",      questions: [{ text:"Joueurs dans une équipe de foot ?", answer:"11" },{ text:"Pays avec le plus de Coupes du Monde ?", answer:"Brésil (5)" },{ text:"Sport avec des balais sur glace ?", answer:"Curling" },{ text:"JO d'été 2024 ?", answer:"Paris" }] },
+      { label: "🌍 Géographie", questions: [{ text:"Capitale de l'Australie ?", answer:"Canberra" },{ text:"Plus grand pays du monde ?", answer:"Russie" },{ text:"Continent du Maroc ?", answer:"Afrique" },{ text:"Plus long fleuve du monde ?", answer:"Nil / Amazone" }] },
+      { label: "🔬 Science",    questions: [{ text:"Symbole chimique de l'or ?", answer:"Au" },{ text:"Planète la plus proche du Soleil ?", answer:"Mercure" },{ text:"Vitesse de la lumière ?", answer:"300 000 km/s" },{ text:"Nombre d'os dans le corps ?", answer:"206" }] },
+      { label: "🍽️ Cuisine",   questions: [{ text:"Ingrédient du guacamole ?", answer:"Avocat" },{ text:"Fromage de la pizza Margherita ?", answer:"Mozzarella" },{ text:"Pays des sushis ?", answer:"Japon" },{ text:"Plat national espagnol ?", answer:"Paella" }] },
+    ]
+  }
+};
+
+// ══════════════════════════════════════
+// STATE & UTILS
+// ══════════════════════════════════════
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let STATE = { roomCode:null, isHost:false, playerId:null, playerName:null, players:{}, currentGame:0, gameState:{} };
+const EMOJIS = ['🦁','🐯','🦊','🐺','🦝','🐻','🐼','🦄'];
+const GAMES = ['Duo/Carré/Cash','L\'Intrus','Sprint de réponses','4 à la suite'];
+let currentAudio = null;
+
+function generateCode() { return 'QUIZ-'+Math.random().toString(36).substr(2,4).toUpperCase(); }
+function showToast(msg, type='') {
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t=document.createElement('div'); t.className=`toast ${type}`; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(),2500);
+}
+function show(id) {
+  ['setup-screen','lobby-screen','game-screen','player-screen'].forEach(s=>{ document.getElementById(s).style.display='none'; });
+  document.getElementById(id).style.display='flex';
+}
+function rp(sub) { return sub ? `rooms/${STATE.roomCode}/${sub}` : `rooms/${STATE.roomCode}`; }
+function dbRef(path) { return ref(db,path); }
+
+// ── MEDIA RENDERING ──────────────────
+function renderMedia(media_url, media_type, compact=false) {
+  if (!media_url || !media_type) return '';
+  if (media_type === 'image') {
+    return `<div class="media-container">
+      <img src="${media_url}" class="question-image" style="${compact?'max-height:180px':''}" alt="Question image" onerror="this.style.display='none'">
+    </div>`;
+  }
+  if (media_type === 'audio') {
+    const id = 'audio-'+Math.random().toString(36).substr(2,5);
+    return `<div class="media-container">
+      <div class="audio-player">
+        <button class="audio-play-btn" id="btn-${id}" onclick="toggleAudio('${id}','${media_url}')">▶</button>
+        <div style="flex:1;display:flex;flex-direction:column;gap:0.4rem">
+          <div class="audio-label">🎵 Extrait audio — cliquez pour écouter</div>
+          <div class="audio-progress"><div class="audio-progress-fill" id="prog-${id}"></div></div>
+        </div>
+      </div>
+      <audio id="${id}" src="${media_url}" preload="none"></audio>
+    </div>`;
+  }
+  return '';
+}
+
+window.toggleAudio = function(id, url) {
+  const audio = document.getElementById(id);
+  const btn = document.getElementById(`btn-${id}`);
+  const prog = document.getElementById(`prog-${id}`);
+  if (!audio) return;
+
+  if (currentAudio && currentAudio !== audio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    document.querySelectorAll('.audio-play-btn').forEach(b=>{ b.textContent='▶'; b.classList.remove('playing'); });
+    document.querySelectorAll('.audio-progress-fill').forEach(p=>p.style.width='0%');
+  }
+
+  if (audio.paused) {
+    audio.play();
+    btn.textContent='⏸'; btn.classList.add('playing');
+    currentAudio = audio;
+    audio.ontimeupdate = ()=>{
+      if (audio.duration) prog.style.width = `${(audio.currentTime/audio.duration)*100}%`;
+    };
+    audio.onended = ()=>{ btn.textContent='▶'; btn.classList.remove('playing'); prog.style.width='0%'; };
+  } else {
+    audio.pause();
+    btn.textContent='▶'; btn.classList.remove('playing');
+  }
+};
+
+// ══════════════════════════════════════
+// ROOM MANAGEMENT
+// ══════════════════════════════════════
+window.createRoom = async function() {
+  const name = document.getElementById('host-name').value.trim();
+  if (!name) return showToast('Entrez votre pseudo','error');
+  const code = generateCode();
+  STATE.roomCode=code; STATE.isHost=true; STATE.playerName=name; STATE.playerId='host';
+  await set(dbRef(rp()), { host:name, status:'lobby', currentGame:0, gameState:{}, players:{}, scores:{} });
+  listenToRoom();
+  show('lobby-screen');
+  document.getElementById('display-room-code').textContent=code;
+  const url=`${location.href.split('?')[0]}?room=${code}`;
+  document.getElementById('display-join-url').textContent=url;
+  showToast('Salle créée !','success');
+};
+
+window.joinRoom = async function() {
+  const name=document.getElementById('join-name').value.trim();
+  const code=document.getElementById('join-code').value.trim().toUpperCase();
+  if (!name) return showToast('Entrez votre pseudo','error');
+  if (!code) return showToast('Entrez le code','error');
+  const snap=await get(dbRef(`rooms/${code}`));
+  if (!snap.exists()) return showToast('Salle introuvable','error');
+  STATE.roomCode=code; STATE.isHost=false; STATE.playerName=name; STATE.playerId='p'+Date.now();
+  const emoji=EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+  await set(dbRef(`rooms/${code}/players/${STATE.playerId}`),{ name, emoji, score:0, ready:true });
+  listenToRoom();
+  show('player-screen');
+};
+
+window.addEventListener('load', ()=>{
+  const code=new URLSearchParams(location.search).get('room');
+  if (code) { document.getElementById('join-code').value=code; showToast(`Salle ${code} détectée !`); }
+});
+
+function listenToRoom() {
+  onValue(dbRef(rp()), snap=>{
+    if (!snap.exists()) return;
+    const data=snap.val();
+    STATE.players=data.players||{};
+    STATE.currentGame=data.currentGame||0;
+    STATE.gameState=data.gameState||{};
+    if (STATE.isHost) {
+      if (data.status==='lobby') updateLobbyUI(data); else { show('game-screen'); renderHostGame(); }
+    } else {
+      renderPlayerView(data);
+    }
+  });
+}
+
+function updateLobbyUI(data) {
+  show('lobby-screen');
+  const players=Object.values(data.players||{});
+  document.getElementById('player-count-label').textContent=`${players.length}/4 joueurs`;
+  const grid=document.getElementById('lobby-players'); grid.innerHTML='';
+  for (let i=0;i<4;i++) {
+    const p=players[i]; const card=document.createElement('div');
+    card.className='player-card'+(p?' active fade-in':' player-empty');
+    card.innerHTML=p?`<div class="player-avatar">${p.emoji}</div><div class="player-name">${p.name}</div><div class="player-score">0</div>`:
+      `<div class="player-avatar" style="opacity:.3">👤</div><div class="player-name" style="color:var(--muted)">Slot libre</div>`;
+    grid.appendChild(card);
+  }
+}
+
+window.copyJoinLink=function(){ navigator.clipboard.writeText(`${location.href.split('?')[0]}?room=${STATE.roomCode}`).then(()=>showToast('Lien copié !','success')); };
+window.startGame=async function(){
+  if (Object.keys(STATE.players).length<1) return showToast('Besoin d\'au moins 1 joueur','error');
+  await update(dbRef(rp()),{ status:'playing', currentGame:1, gameState:initGame1() });
+};
+
+// ══════════════════════════════════════
+// HOST GAME RENDERER
+// ══════════════════════════════════════
+function renderHostGame() {
+  show('game-screen');
+  const g=STATE.currentGame;
+  document.getElementById('game-index-display').textContent=g;
+  document.getElementById('game-title').textContent=GAMES[g-1]||'QUIZ NIGHT';
+  renderHeaderScores();
+  const content=document.getElementById('game-content'); content.innerHTML='';
+  if (g===1) renderGame1Host(content);
+  else if (g===2) renderGame2Host(content);
+  else if (g===3) renderGame3Host(content);
+  else if (g===4) renderGame4Host(content);
+  else renderFinalScoreboard(content);
+}
+
+function renderHeaderScores() {
+  const bar=document.getElementById('header-scores'); bar.innerHTML='';
+  getPlayersSorted().forEach((p,i)=>{
+    const d=document.createElement('div'); d.className='score-item';
+    d.innerHTML=`<div class="score-name">${p.emoji} ${p.name}</div><div class="score-pts${i===0?' leader':''}">${p.score}pts</div>`;
+    bar.appendChild(d);
+  });
+}
+
+function getPlayersSorted() {
+  return Object.entries(STATE.players).map(([id,p])=>({id,...p})).sort((a,b)=>b.score-a.score);
+}
+
+async function addScore(pid, pts) {
+  const cur=STATE.players[pid]?.score||0;
+  await update(dbRef(`${rp()}/players/${pid}`),{ score:cur+pts });
+}
+
+async function nextGame() {
+  const next=STATE.currentGame+1;
+  let gs={};
+  if (next===2) gs=initGame2();
+  else if (next===3) gs=initGame3();
+  else if (next===4) gs=initGame4();
+  await update(dbRef(rp()),{ currentGame:next, gameState:gs });
+}
+
+// ══════════════════════════════════════
+// JEU 1 : DUO / CARRÉ / CASH
+// ══════════════════════════════════════
+function initGame1() {
+  return { phase:'show-question', currentPlayerIdx:0, playerOrder:Object.keys(STATE.players), questionIdx:0, mode:null, answers:[], correctAnswer:0, questionsPerPlayer:3, questionCount:0 };
+}
+
+function modePoints(m) { return m==='duo'?1:m==='carre'?2:4; }
+
+function renderGame1Host(container) {
+  const gs=STATE.gameState;
+  const pids=gs.playerOrder||Object.keys(STATE.players);
+  const curPid=pids[gs.currentPlayerIdx%pids.length];
+  const curPlayer=STATE.players[curPid];
+  const qIdx=gs.questionIdx||0;
+  const Q=QUESTIONS.game1[qIdx];
+  const total=(gs.questionsPerPlayer||3)*pids.length;
+  const qNum=(gs.questionCount||0)+1;
+
+  const mediaHTML = Q ? renderMedia(Q.media_url, Q.media_type) : '';
+  const questionText = Q && !Q.image_only ? `<div class="j1-question fade-in">${Q.text}</div>` : '';
+
+  // ── PHASE 0 : afficher la question, le joueur choisit son mode à l'oral ──
+  if (gs.phase==='show-question') {
+    container.innerHTML=`
+      <div class="section-title fade-in">${curPlayer?.emoji||''} ${curPlayer?.name||'—'}</div>
+      <div class="instruction">Question ${qNum}/${total}</div>
+      ${Q ? mediaHTML : ''}
+      ${Q ? questionText : '<div class="instruction" style="color:var(--red)">⚠️ Plus de questions dans QUESTIONS.game1</div>'}
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:0.75rem;padding:1rem 1.5rem;text-align:center;width:100%;max-width:500px">
+        <div class="instruction" style="margin-bottom:0.75rem">⬇️ Le joueur annonce son mode, cliquez pour confirmer</div>
+        <div class="j1-mode-btns">
+          <div class="mode-btn${gs.mode==='duo'?' selected':''}" onclick="selectMode1('duo')">DUO<span class="pts">1 pt · 2 réponses</span></div>
+          <div class="mode-btn${gs.mode==='carre'?' selected':''}" onclick="selectMode1('carre')">CARRÉ<span class="pts">2 pts · 4 réponses</span></div>
+          <div class="mode-btn${gs.mode==='cash'?' selected':''}" onclick="selectMode1('cash')">CASH<span class="pts">4 pts · sans réponse</span></div>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="max-width:300px;opacity:${gs.mode?1:0.4}" onclick="confirmMode1()">
+        ${gs.mode ? `CONFIRMER ${gs.mode.toUpperCase()} →` : 'Choisissez un mode…'}
+      </button>
+    `;
+
+  // ── PHASE 1 : afficher les réponses selon le mode ──
+  } else if (gs.phase==='show-answers') {
+    const answers=buildAnswersForMode(Q?.answers||gs.answers, gs.mode);
+    container.innerHTML=`
+      ${Q ? mediaHTML : ''}
+      ${Q && !Q.image_only ? `<div class="j1-question fade-in">${Q.text}</div>` : ''}
+      <div class="tag tag-gold" style="font-family:Bebas Neue;font-size:1.1rem">${gs.mode?.toUpperCase()||''}</div>
+      ${gs.mode!=='cash' ? `<div class="j1-answers fade-in">${answers.map(a=>`<div class="answer-btn">${a}</div>`).join('')}</div>`
+        : `<div class="instruction" style="font-size:1.5rem">🎤 Réponse à l'oral</div>`}
+      <div class="j1-host-controls">
+        <button class="btn btn-green btn-sm" onclick="revealAnswer1(true)">✅ BONNE RÉPONSE</button>
+        <button class="btn btn-red btn-sm" onclick="revealAnswer1(false)">❌ MAUVAISE</button>
+      </div>
+    `;
+  } else {
+    const Q2=QUESTIONS.game1[gs.questionIdx||0];
+    const allA=Q2?.answers||gs.answers||[];
+    container.innerHTML=`
+      ${Q2 ? renderMedia(Q2.media_url,Q2.media_type,true) : ''}
+      ${Q2&&!Q2.image_only?`<div class="j1-question">${Q2.text}</div>`:''}
+      <div class="j1-answers fade-in">
+        ${allA.map((a,i)=>`<div class="answer-btn${i===(Q2?.correct??0)?' correct':' wrong'}">${a}</div>`).join('')}
+      </div>
+      <div style="text-align:center;font-family:Bebas Neue;font-size:1.3rem;color:${gs.lastCorrect?'var(--green)':'var(--red)'}">
+        ${gs.lastCorrect?`✅ +${modePoints(gs.mode)} pts pour ${curPlayer?.name}`:'❌ Pas de point'}
+      </div>
+      <button class="btn btn-primary" style="max-width:300px" onclick="nextQuestion1()">JOUEUR SUIVANT →</button>
+    `;
+  }
+}
+
+function buildAnswersForMode(answers, mode) {
+  const pool=[...answers];
+  let shown = mode==='duo' ? [pool[0], ...pool.slice(1).sort(()=>Math.random()-0.5).slice(0,1)]
+            : mode==='carre' ? pool
+            : [];
+  return shown.sort(()=>Math.random()-0.5);
+}
+
+window.selectMode1=function(mode) {
+  STATE.gameState.mode=mode;
+  document.getElementById('game-content').innerHTML='';
+  renderGame1Host(document.getElementById('game-content'));
+};
+
+window.confirmMode1=async function() {
+  if (!STATE.gameState.mode) return showToast('Choisissez un mode d\'abord','error');
+  const gs={...STATE.gameState, phase:'show-answers'};
+  await update(dbRef(rp()),{ gameState:gs });
+};
+
+window.revealAnswer1=async function(correct) {
+  const gs={...STATE.gameState, phase:'reveal', lastCorrect:correct};
+  await update(dbRef(rp()),{ gameState:gs });
+  if (correct) {
+    const pids=gs.playerOrder||Object.keys(STATE.players);
+    const curPid=pids[gs.currentPlayerIdx%pids.length];
+    await addScore(curPid,modePoints(gs.mode));
+  }
+};
+
+window.nextQuestion1=async function() {
+  const gs=STATE.gameState;
+  const pids=gs.playerOrder||Object.keys(STATE.players);
+  const nextQ=(gs.questionCount||0)+1;
+  const total=(gs.questionsPerPlayer||3)*pids.length;
+  if (nextQ>=total || nextQ>=QUESTIONS.game1.length) { await nextGame(); return; }
+  const nextIdx=(gs.currentPlayerIdx+1)%pids.length;
+  const nextQIdx=(gs.questionIdx||0)+1;
+  await update(dbRef(rp()),{ gameState:{ ...initGame1(), playerOrder:pids, currentPlayerIdx:nextIdx, questionCount:nextQ, questionIdx:nextQIdx, questionsPerPlayer:gs.questionsPerPlayer, phase:'show-question' } });
+};
+
+// ══════════════════════════════════════
+// JEU 2 : L'INTRUS
+// ══════════════════════════════════════
+function initGame2() {
+  const round=QUESTIONS.game2[0];
+  return { phase:'playing', round:1, currentPlayerIdx:0, playerOrder:Object.keys(STATE.players), revealed:[] };
+}
+
+function renderGame2Host(container) {
+  const gs=STATE.gameState;
+  const pids=gs.playerOrder||Object.keys(STATE.players);
+  const roundData=QUESTIONS.game2[(gs.round||1)-1];
+  if (!roundData) { container.innerHTML=`<div class="section-title">Fin des rounds</div><button class="btn btn-primary" style="max-width:300px" onclick="nextGame()">JEU SUIVANT →</button>`; return; }
+
+  const curPid=pids[gs.currentPlayerIdx%pids.length];
+  const curPlayer=STATE.players[curPid];
+  const revealed=gs.revealed||[];
+
+  if (gs.phase==='round-end') {
+    container.innerHTML=`
+      <div class="section-title">FIN DU ROUND ${gs.round}</div>
+      ${renderMedia(roundData.media_url,roundData.media_type,true)}
+      <div class="j2-grid">
+        ${roundData.answers.map((a,i)=>`<div class="j2-answer${i===roundData.wrong_index?' wrong':''}">${i===roundData.wrong_index?`❌ ${a}`:a}</div>`).join('')}
+      </div>
+      ${gs.round<QUESTIONS.game2.length?`<button class="btn btn-primary" style="max-width:300px" onclick="nextRound2()">ROUND SUIVANT →</button>`:`<button class="btn btn-primary" style="max-width:300px" onclick="nextGame()">JEU SUIVANT →</button>`}
+    `;
+    return;
+  }
+
+  container.innerHTML=`
+    <div class="section-title fade-in">${roundData.question}</div>
+    ${renderMedia(roundData.media_url,roundData.media_type,true)}
+    <div class="instruction">Round ${gs.round}/${QUESTIONS.game2.length} · Tour de ${curPlayer?.emoji} ${curPlayer?.name}</div>
+    <div class="j2-grid fade-in">
+      ${roundData.answers.map((a,i)=>{
+        const isRevealed=revealed.includes(i);
+        const isWrong=i===roundData.wrong_index;
+        return `<div class="j2-answer${isRevealed?' revealed':''}${isRevealed&&isWrong?' wrong':''}" onclick="selectAnswer2(${i})">${isRevealed&&isWrong?'❌ INTRUS':isRevealed?'✓':a}</div>`;
+      }).join('')}
+    </div>
+    <div class="instruction">${roundData.answers.filter((_,i)=>!revealed.includes(i)&&i!==roundData.wrong_index).length} bonnes réponses restantes</div>
+  `;
+}
+
+window.selectAnswer2=async function(idx) {
+  const gs=STATE.gameState;
+  const roundData=QUESTIONS.game2[(gs.round||1)-1];
+  if (!roundData) return;
+  if ((gs.revealed||[]).includes(idx)) return;
+  const isWrong=idx===roundData.wrong_index;
+  const pids=gs.playerOrder||Object.keys(STATE.players);
+  const curPid=pids[gs.currentPlayerIdx%pids.length];
+  const newRevealed=[...(gs.revealed||[]),idx];
+  const allGood=roundData.answers.every((_,i)=>i===roundData.wrong_index||newRevealed.includes(i));
+  if (!isWrong) await addScore(curPid,2);
+  const nextIdx=(gs.currentPlayerIdx+1)%pids.length;
+  await update(dbRef(rp()),{ gameState:{...gs, revealed:newRevealed, currentPlayerIdx:isWrong||allGood?gs.currentPlayerIdx:nextIdx, phase:isWrong||allGood?'round-end':'playing'} });
+};
+
+window.nextRound2=async function() {
+  const gs=STATE.gameState;
+  await update(dbRef(rp()),{ gameState:{ phase:'playing', round:(gs.round||1)+1, currentPlayerIdx:0, playerOrder:gs.playerOrder, revealed:[] } });
+};
+
+// ══════════════════════════════════════
+// JEU 3 : SPRINT DE RÉPONSES
+// ══════════════════════════════════════
+function initGame3() {
+  return { phase:'setup', assignments:{}, validations:{}, currentPidValidating:null, playerOrder:Object.keys(STATE.players), timerStart:null };
+}
+
+function renderGame3Host(container) {
+  const gs=STATE.gameState;
+  const pids=gs.playerOrder||Object.keys(STATE.players);
+
+  if (gs.phase==='setup') {
+    container.innerHTML=`
+      <div class="section-title">SPRINT DE RÉPONSES</div>
+      <div class="instruction">Les questions sont pré-assignées, lancez quand vous êtes prêt !</div>
+      <div style="width:100%;max-width:600px;display:flex;flex-direction:column;gap:1rem">
+        ${pids.map((pid,i)=>`
+          <div style="display:flex;align-items:center;gap:1rem;background:var(--surface);padding:1rem;border-radius:0.75rem;border:1px solid var(--border)">
+            <div style="min-width:110px;font-weight:500">${STATE.players[pid]?.emoji} ${STATE.players[pid]?.name}</div>
+            <div style="font-size:0.85rem;color:var(--muted);flex:1">${QUESTIONS.game3[i]?.question||'Pas de question assignée'}</div>
+          </div>
+        `).join('')}
+      </div>
+      <button class="btn btn-primary" style="max-width:300px" onclick="launchGame3()">LANCER LES 30s →</button>
+    `;
+  } else if (gs.phase==='typing') {
+    container.innerHTML=`
+      <div class="section-title">EN COURS…</div>
+      <div class="instruction">Les joueurs écrivent leurs réponses</div>
+      <div class="j3-timer" id="j3-host-timer-el"><span id="j3-host-timer">30</span></div>
+      <div class="instruction">Attendez la fin du timer</div>
+    `;
+    startHostTimer3(gs.timerStart);
+  } else if (gs.phase==='validation') {
+    const curPid=gs.currentPidValidating||pids[0];
+    const curPlayer=STATE.players[curPid];
+    const pData=gs.validations?.[curPid]||{ answers:[], validated:{} };
+    const qIdx=pids.indexOf(curPid);
+    const q=QUESTIONS.game3[qIdx]?.question||'';
+
+    container.innerHTML=`
+      <div class="section-title">${curPlayer?.emoji} ${curPlayer?.name}</div>
+      <div class="j1-question" style="font-size:1rem;color:var(--muted)">${q}</div>
+      <div class="j3-answers-list fade-in">
+        ${(pData.answers||[]).map((a,i)=>{
+          const v=pData.validated?.[i];
+          return `<div class="j3-tag${v===true?' valid':v===false?' invalid':''}">
+            ${a}
+            ${v===undefined?`<button class="j3-validate-btn ok" onclick="validateAnswer3('${curPid}',${i},true)">✓</button>
+                            <button class="j3-validate-btn ko" onclick="validateAnswer3('${curPid}',${i},false)">✗</button>`:''}
+          </div>`;
+        }).join('')||'<div style="color:var(--muted)">Aucune réponse</div>'}
+      </div>
+      <button class="btn btn-primary" style="max-width:300px" onclick="finishValidation3('${curPid}')">VALIDER ET SUIVANT →</button>
+    `;
+  }
+}
+
+window.launchGame3=async function() {
+  const pids=STATE.gameState.playerOrder||Object.keys(STATE.players);
+  const assignments={};
+  pids.forEach((pid,i)=>{ assignments[pid]={ question:QUESTIONS.game3[i]?.question||'' }; });
+  const gs={ ...STATE.gameState, phase:'typing', assignments, validations:{}, timerStart:Date.now() };
+  await update(dbRef(rp()),{ gameState:gs });
+  setTimeout(async()=>{ await update(dbRef(rp()),{ gameState:{ ...gs, phase:'validation', currentPidValidating:pids[0] } }); }, 30000);
+};
+
+let timerInterval3=null;
+function startHostTimer3(start) {
+  if (timerInterval3) clearInterval(timerInterval3);
+  timerInterval3=setInterval(()=>{
+    const el=document.getElementById('j3-host-timer'); if (!el) { clearInterval(timerInterval3); return; }
+    const left=Math.max(0,30-Math.floor((Date.now()-start)/1000));
+    el.textContent=left;
+    if (left<=10) el.closest('.j3-timer')?.classList.add('urgent');
+  },500);
+}
+
+window.validateAnswer3=async function(pid,idx,valid) {
+  const gs=STATE.gameState;
+  const validations={...(gs.validations||{})};
+  if (!validations[pid]) validations[pid]={ answers:gs.validations?.[pid]?.answers||[], validated:{} };
+  validations[pid].validated[idx]=valid;
+  await update(dbRef(rp()),{ gameState:{ ...gs, validations } });
+};
+
+window.finishValidation3=async function(pid) {
+  const gs=STATE.gameState;
+  const pids=gs.playerOrder||Object.keys(STATE.players);
+  const pData=(gs.validations||{})[pid]||{ answers:[], validated:{} };
+  const pts=Object.values(pData.validated||{}).filter(v=>v===true).length;
+  if (pts>0) await addScore(pid,pts);
+  const nextIdx=pids.indexOf(pid)+1;
+  if (nextIdx>=pids.length) { await nextGame(); return; }
+  await update(dbRef(rp()),{ gameState:{ ...gs, currentPidValidating:pids[nextIdx] } });
+};
+
+// ══════════════════════════════════════
+// JEU 4 : 4 À LA SUITE
+// ══════════════════════════════════════
+function initGame4() {
+  return { phase:'choose-theme', currentPlayerIdx:0, playerOrder:Object.keys(STATE.players), selectedTheme:null, streak:0, correctInRound:0, timerStart:null, questionInTheme:0 };
+}
+
+function renderGame4Host(container) {
+  const gs=STATE.gameState;
+  const pids=gs.playerOrder||Object.keys(STATE.players);
+  const curPid=pids[gs.currentPlayerIdx%pids.length];
+  const curPlayer=STATE.players[curPid];
+
+  if (gs.phase==='choose-theme') {
+    container.innerHTML=`
+      <div class="section-title fade-in">${curPlayer?.emoji} ${curPlayer?.name}</div>
+      <div class="instruction">Choisissez un thème (40s pour répondre)</div>
+      <div class="j4-themes">
+        ${QUESTIONS.game4.themes.map((t,i)=>`<div class="theme-btn${gs.selectedTheme===i?' selected':''}" onclick="selectTheme4(${i})">${t.label}</div>`).join('')}
+      </div>
+      <button class="btn btn-primary" style="max-width:300px" onclick="startPlaying4()">C'EST PARTI →</button>
+    `;
+  } else if (gs.phase==='playing') {
+    const theme=QUESTIONS.game4.themes[gs.selectedTheme];
+    const qIdx=gs.questionInTheme||0;
+    const currentQ=theme?.questions[qIdx];
+    const left=Math.max(0,40-Math.floor((Date.now()-(gs.timerStart||Date.now()))/1000));
+
+    container.innerHTML=`
+      <div class="section-title fade-in">${curPlayer?.emoji} ${curPlayer?.name} · ${theme?.label||''}</div>
+      <div class="j4-timer-bar"><div class="j4-timer-fill${left<10?' low':''}" style="width:${(left/40)*100}%" id="j4-bar"></div></div>
+      <div style="font-family:Bebas Neue;font-size:2rem;color:var(--gold)" id="j4-timer-num">${left}</div>
+      ${currentQ?`<div class="j1-question" style="font-size:1.2rem">${currentQ.text}</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:0.5rem;padding:0.5rem 1rem;font-size:0.8rem;color:var(--muted)">Réponse : <strong style="color:var(--gold)">${currentQ.answer}</strong></div>`:''}
+      <div style="display:flex;gap:2rem;align-items:center">
+        <div class="j4-streak">🔥 ${gs.streak||0} d'affilée</div>
+        <div style="font-family:Bebas Neue;color:var(--muted)">Bonnes: ${gs.correctInRound||0}</div>
+      </div>
+      <div class="j1-host-controls">
+        <button class="btn btn-green btn-sm" onclick="answerGame4(true)">✅ BONNE</button>
+        <button class="btn btn-red btn-sm" onclick="answerGame4(false)">❌ MAUVAISE</button>
+        <button class="btn btn-secondary btn-sm" onclick="endTurn4()">⏱ FIN</button>
+      </div>
+    `;
+    startTimer4(gs.timerStart);
+  } else if (gs.phase==='between') {
+    const more=(gs.currentPlayerIdx+1)<pids.length;
+    container.innerHTML=`
+      <div class="section-title">FIN DU TOUR</div>
+      <div class="instruction">${curPlayer?.name} : ${gs.correctInRound||0} bonne(s) réponse(s) ${gs.correctInRound>=4?' +2 pts BONUS 🎉':''}</div>
+      ${renderScoreboardInline()}
+      ${more?`<button class="btn btn-primary" style="max-width:300px" onclick="nextTurn4()">JOUEUR SUIVANT →</button>`
+             :`<button class="btn btn-primary" style="max-width:300px" onclick="nextGame()">RÉSULTATS FINAUX →</button>`}
+    `;
+  }
+}
+
+let timer4=null;
+function startTimer4(start) {
+  if (timer4) clearInterval(timer4);
+  timer4=setInterval(()=>{
+    const bar=document.getElementById('j4-bar'); const num=document.getElementById('j4-timer-num');
+    if (!bar) { clearInterval(timer4); return; }
+    const left=Math.max(0,40-Math.floor((Date.now()-start)/1000));
+    bar.style.width=`${(left/40)*100}%`; num.textContent=left;
+    if (left<10) bar.classList.add('low');
+    if (left===0) { clearInterval(timer4); endTurn4(); }
+  },500);
+}
+
+window.selectTheme4=function(idx) {
+  STATE.gameState.selectedTheme=idx;
+  document.getElementById('game-content').innerHTML='';
+  renderGame4Host(document.getElementById('game-content'));
+};
+
+window.startPlaying4=async function() {
+  if (STATE.gameState.selectedTheme===null||STATE.gameState.selectedTheme===undefined) return showToast('Choisissez un thème','error');
+  await update(dbRef(rp()),{ gameState:{ ...STATE.gameState, phase:'playing', streak:0, correctInRound:0, timerStart:Date.now(), questionInTheme:0 } });
+};
+
+window.answerGame4=async function(correct) {
+  const gs=STATE.gameState;
+  let streak=gs.streak||0; let cor=gs.correctInRound||0;
+  const pids=gs.playerOrder||Object.keys(STATE.players);
+  const curPid=pids[gs.currentPlayerIdx%pids.length];
+  const nextQIdx=(gs.questionInTheme||0)+(correct?1:0);
+  const theme=QUESTIONS.game4.themes[gs.selectedTheme];
+
+  if (correct) {
+    streak++; cor++;
+    await addScore(curPid,1);
+    if (streak===4) { await addScore(curPid,2); showToast('+2 pts COMBO !','success'); }
+    if (streak>=4) streak=0;
+  } else { streak=0; }
+
+  // Next question in theme or reset
+  const qIdx=correct?nextQIdx:(gs.questionInTheme||0);
+  await update(dbRef(rp()),{ gameState:{ ...gs, streak, correctInRound:cor, questionInTheme:qIdx%(theme?.questions?.length||4) } });
+};
+
+window.endTurn4=async function() {
+  if (timer4) clearInterval(timer4);
+  await update(dbRef(rp()),{ gameState:{ ...STATE.gameState, phase:'between' } });
+};
+
+window.nextTurn4=async function() {
+  const gs=STATE.gameState;
+  await update(dbRef(rp()),{ gameState:{ ...gs, phase:'choose-theme', currentPlayerIdx:gs.currentPlayerIdx+1, streak:0, correctInRound:0, selectedTheme:null, questionInTheme:0 } });
+};
+
+function renderScoreboardInline() {
+  return `<div class="scoreboard">${getPlayersSorted().map((p,i)=>`<div class="score-row"><div class="score-rank">${i+1}</div><div class="score-emoji">${p.emoji}</div><div class="score-player-name">${p.name}</div><div class="score-pts-big">${p.score}</div></div>`).join('')}</div>`;
+}
+
+// ══════════════════════════════════════
+// SCOREBOARD FINAL
+// ══════════════════════════════════════
+function renderFinalScoreboard(container) {
+  const medals=['🥇','🥈','🥉','4️⃣'];
+  container.innerHTML=`
+    <div class="section-title" style="font-size:3rem">RÉSULTATS FINAUX</div>
+    <div class="scoreboard fade-in">
+      ${getPlayersSorted().map((p,i)=>`<div class="score-row"><div class="score-rank">${medals[i]||i+1}</div><div class="score-emoji">${p.emoji}</div><div class="score-player-name" style="font-size:1.1rem;font-weight:600">${p.name}</div><div class="score-pts-big" style="font-size:2rem">${p.score} pts</div></div>`).join('')}
+    </div>
+    <div class="instruction">🎉 Merci d'avoir joué !</div>
+    <button class="btn btn-secondary" style="max-width:300px" onclick="location.reload()">NOUVELLE PARTIE</button>
+  `;
+}
+
+// ══════════════════════════════════════
+// PLAYER VIEW
+// ══════════════════════════════════════
+function renderPlayerView(data) {
+  const game=data.currentGame||0; const gs=data.gameState||{};
+  const content=document.getElementById('player-content');
+  show('player-screen');
+
+  if (data.status==='lobby') {
+    content.innerHTML=`<div class="player-waiting text-center fade-in"><div class="player-waiting-icon">⏳</div><h2>EN ATTENTE</h2><p>L'hôte va lancer la partie…</p><div class="tag tag-gold" style="margin-top:1rem">${STATE.playerName}</div></div>`;
+    return;
+  }
+  if (game===5) { renderPlayerFinal(content, data); return; }
+  if (game===1) renderPlayerGame1(content,gs,data);
+  else if (game===2) renderPlayerGame2(content,gs,data);
+  else if (game===3) renderPlayerGame3(content,gs,data);
+  else if (game===4) renderPlayerGame4(content,gs,data);
+}
+
+function renderPlayerFinal(content, data) {
+  const players=Object.entries(data.players||{}).map(([id,p])=>({id,...p})).sort((a,b)=>b.score-a.score);
+  const myRank=players.findIndex(p=>p.id===STATE.playerId)+1;
+  const myScore=data.players?.[STATE.playerId]?.score||0;
+  content.innerHTML=`<div class="player-question-card fade-in text-center">
+    <div style="font-size:3rem">${myRank===1?'🏆':myRank===2?'🥈':myRank===3?'🥉':'😢'}</div>
+    <div style="font-family:Bebas Neue;font-size:2rem;color:var(--gold)">${myRank===1?'VICTOIRE !':myRank===2?'2ème place !':myRank===3?'3ème place':'4ème place'}</div>
+    <div style="font-size:1.5rem;font-family:Bebas Neue">${myScore} points</div>
+  </div>`;
+}
+
+function renderPlayerGame1(content, gs, data) {
+  const pids=gs.playerOrder||Object.keys(data.players||{});
+  const curPid=pids[gs.currentPlayerIdx%pids.length];
+  const isMyTurn=curPid===STATE.playerId;
+  const myScore=data.players?.[STATE.playerId]?.score||0;
+  const Q=QUESTIONS.game1[gs.questionIdx||0];
+
+  // Texte d'état selon la phase et si c'est mon tour
+  let phaseBlock='';
+  if (gs.phase==='show-question') {
+    phaseBlock=isMyTurn
+      ? `<div style="background:rgba(245,200,66,0.08);border:1px solid var(--gold);border-radius:0.75rem;padding:1rem;text-align:center">
+           <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.5rem">Annonce ton mode à l'hôte :</div>
+           <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap">
+             <div style="background:var(--surface2);border:1px solid var(--border);border-radius:0.5rem;padding:0.5rem 1rem;text-align:center">
+               <div style="font-family:Bebas Neue;font-size:1.1rem">DUO</div><div style="font-size:0.7rem;color:var(--muted)">1 pt · 2 réponses</div>
+             </div>
+             <div style="background:var(--surface2);border:1px solid var(--border);border-radius:0.5rem;padding:0.5rem 1rem;text-align:center">
+               <div style="font-family:Bebas Neue;font-size:1.1rem">CARRÉ</div><div style="font-size:0.7rem;color:var(--muted)">2 pts · 4 réponses</div>
+             </div>
+             <div style="background:var(--surface2);border:1px solid var(--border);border-radius:0.5rem;padding:0.5rem 1rem;text-align:center">
+               <div style="font-family:Bebas Neue;font-size:1.1rem">CASH</div><div style="font-size:0.7rem;color:var(--muted)">4 pts · sans réponse</div>
+             </div>
+           </div>
+         </div>`
+      : `<div style="text-align:center;color:var(--muted);font-size:0.9rem">
+           ⏳ <strong>${data.players?.[curPid]?.name}</strong> choisit son mode…
+         </div>`;
+  } else if (gs.phase==='show-answers') {
+    phaseBlock=`
+      <div class="tag tag-blue" style="align-self:center">${gs.mode?.toUpperCase()||''} · ${modePoints(gs.mode)} pt${modePoints(gs.mode)>1?'s':''}</div>
+      ${gs.mode!=='cash'
+        ? `<div class="j1-answers">${buildAnswersForMode(Q?.answers||[],gs.mode).map(a=>`<div class="answer-btn">${a}</div>`).join('')}</div>`
+        : `<div style="text-align:center;font-size:1.4rem;color:var(--muted)">🎤 Réponds à l'oral</div>`}
+    `;
+  } else {
+    // reveal
+    phaseBlock=`
+      <div class="j1-answers">${(Q?.answers||[]).map((a,i)=>`<div class="answer-btn${i===(Q?.correct??0)?' correct':' wrong'}">${a}</div>`).join('')}</div>
+      <div style="text-align:center;font-family:Bebas Neue;font-size:1.3rem;color:${gs.lastCorrect?'var(--green)':'var(--red)'}">
+        ${gs.lastCorrect?`✅ +${modePoints(gs.mode)} pts`:'❌ Pas de point'}
+      </div>
+    `;
+  }
+
+  content.innerHTML=`<div class="player-question-card fade-in">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="tag tag-gold">Jeu 1 · Duo/Carré/Cash</div>
+      <div style="font-family:Bebas Neue;color:var(--gold)">${myScore} pts</div>
+    </div>
+    ${isMyTurn?`<div class="player-turn-badge">⭐ C'EST TON TOUR !</div>`:''}
+    ${Q?renderMedia(Q.media_url,Q.media_type,true):''}
+    ${Q&&!Q.image_only?`<div style="font-size:1.05rem;font-weight:500;line-height:1.5">${Q.text}</div>`:''}
+    ${phaseBlock}
+  </div>`;
+}
+
+function renderPlayerGame2(content, gs, data) {
+  const pids=gs.playerOrder||Object.keys(data.players||{});
+  const curPid=pids[gs.currentPlayerIdx%pids.length];
+  const isMyTurn=curPid===STATE.playerId;
+  const roundData=QUESTIONS.game2[(gs.round||1)-1];
+
+  content.innerHTML=`<div class="player-question-card fade-in">
+    <div class="tag tag-gold">Jeu 2 · L'Intrus · Round ${gs.round||1}/${QUESTIONS.game2.length}</div>
+    ${isMyTurn&&gs.phase==='playing'?`<div class="player-turn-badge">⭐ C'EST TON TOUR !</div>`:''}
+    ${gs.phase==='playing'?`
+      ${roundData?renderMedia(roundData.media_url,roundData.media_type,true):''}
+      <div style="font-weight:600;font-size:1.1rem">${roundData?.question||'…'}</div>
+      <div style="color:var(--muted);font-size:0.85rem">${isMyTurn?'Annonce une réponse à l\'hôte':`Au tour de ${data.players?.[curPid]?.name}`}</div>
+      <div class="j2-grid" style="font-size:0.8rem">
+        ${(roundData?.answers||[]).map((a,i)=>{
+          const rev=(gs.revealed||[]).includes(i); const iW=i===roundData?.wrong_index;
+          return `<div class="j2-answer${rev?' revealed':''}${rev&&iW?' wrong':''}">${rev&&iW?'❌':rev?'✓':a}</div>`;
+        }).join('')}
+      </div>
+    `:`<div style="text-align:center;color:var(--muted)">Fin du round !</div>`}
+  </div>`;
+}
+
+function renderPlayerGame3(content, gs, data) {
+  const pids=gs.playerOrder||Object.keys(data.players||{});
+  const myIdx=pids.indexOf(STATE.playerId);
+
+  if (gs.phase==='setup') {
+    content.innerHTML=`<div class="player-waiting text-center"><div class="player-waiting-icon">📝</div><h2>JEU 3</h2><p>Préparez-vous !</p></div>`;
+  } else if (gs.phase==='typing') {
+    const myQ=QUESTIONS.game3[myIdx]?.question||gs.assignments?.[STATE.playerId]?.question||'';
+    const myAnswers=gs.validations?.[STATE.playerId]?.answers||[];
+
+    content.innerHTML=`<div class="player-question-card fade-in">
+      <div class="j3-timer" id="p-timer-el"><span id="p-timer-num">30</span></div>
+      <div style="font-weight:600;font-size:1.1rem">${myQ||'Votre question arrive…'}</div>
+      <input class="j3-input" id="p-answer-input" placeholder="Écrivez une réponse et appuyez sur Entrée…" autocomplete="off">
+      <div class="j3-answers-list" id="p-answers-list">
+        ${myAnswers.map(a=>`<div class="j3-tag">${a}</div>`).join('')}
+      </div>
+    </div>`;
+    startPlayerTimer3(gs.timerStart);
+    document.getElementById('p-answer-input')?.addEventListener('keydown', e=>{ if(e.key==='Enter') submitAnswer3Player(); });
+  } else if (gs.phase==='validation') {
+    const isValidating=gs.currentPidValidating===STATE.playerId;
+    const pData=gs.validations?.[STATE.playerId]||{ answers:[], validated:{} };
+    content.innerHTML=`<div class="player-question-card fade-in">
+      <div class="tag tag-gold">${isValidating?'L\'hôte valide vos réponses…':'Validation en cours…'}</div>
+      <div class="j3-answers-list">
+        ${(pData.answers||[]).map((a,i)=>{
+          const v=pData.validated?.[i];
+          return `<div class="j3-tag${v===true?' valid':v===false?' invalid':''}">${a}</div>`;
+        }).join('')||'<div style="color:var(--muted)">Aucune réponse soumise</div>'}
+      </div>
+    </div>`;
+  }
+}
+
+let playerTimer3=null;
+function startPlayerTimer3(start) {
+  if (playerTimer3) clearInterval(playerTimer3);
+  playerTimer3=setInterval(()=>{
+    const el=document.getElementById('p-timer-num'); if (!el) { clearInterval(playerTimer3); return; }
+    const left=Math.max(0,30-Math.floor((Date.now()-start)/1000));
+    el.textContent=left;
+    if (left<=10) el.closest('.j3-timer')?.classList.add('urgent');
+    if (left===0) { clearInterval(playerTimer3); document.getElementById('p-answer-input')?.setAttribute('disabled','true'); }
+  },500);
+}
+
+window.submitAnswer3Player=async function() {
+  const input=document.getElementById('p-answer-input');
+  const val=input?.value?.trim(); if (!val) return;
+  input.value='';
+  const gs=STATE.gameState;
+  const current=gs.validations?.[STATE.playerId]?.answers||[];
+  if (current.includes(val)) return showToast('Déjà soumis','error');
+  const newAnswers=[...current,val];
+  const validated=gs.validations?.[STATE.playerId]?.validated||{};
+  await update(dbRef(`${rp()}/gameState/validations/${STATE.playerId}`),{ answers:newAnswers, validated });
+  const list=document.getElementById('p-answers-list');
+  if (list) list.innerHTML+=`<div class="j3-tag fade-in">${val}</div>`;
+};
+
+function renderPlayerGame4(content, gs, data) {
+  const pids=gs.playerOrder||Object.keys(data.players||{});
+  const curPid=pids[gs.currentPlayerIdx%pids.length];
+  const isMyTurn=curPid===STATE.playerId;
+  const myScore=data.players?.[STATE.playerId]?.score||0;
+  const theme=QUESTIONS.game4.themes[gs.selectedTheme];
+
+  content.innerHTML=`<div class="player-question-card fade-in">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="tag tag-gold">Jeu 4 · 4 à la suite</div>
+      <div style="font-family:Bebas Neue;color:var(--gold)">${myScore} pts</div>
+    </div>
+    ${isMyTurn&&gs.phase==='playing'?`<div class="player-turn-badge">⭐ C'EST TON TOUR !</div>`:''}
+    ${gs.phase==='choose-theme'?`
+      <div style="text-align:center">
+        ${isMyTurn?`<strong>Annonce ton thème à l\'hôte !</strong><br><br>
+          <div class="j4-themes">${QUESTIONS.game4.themes.map((t,i)=>`<div class="theme-btn${gs.selectedTheme===i?' selected':''}">${t.label}</div>`).join('')}</div>`
+        :`Au tour de <strong>${data.players?.[curPid]?.name}</strong> de choisir`}
+      </div>
+    `:gs.phase==='playing'?`
+      <div style="font-weight:600;font-size:1.1rem">${theme?.label||''}</div>
+      ${isMyTurn?`
+        <div class="j4-timer-bar"><div class="j4-timer-fill" id="p-j4-bar" style="width:100%"></div></div>
+        <div style="font-family:Bebas Neue;font-size:1.5rem;color:var(--gold)" id="p-j4-num">40</div>
+        <div class="j4-streak">🔥 ${gs.streak||0} d'affilée</div>
+        <div style="color:var(--muted);font-size:0.9rem">Répondez à l'oral — l'hôte valide</div>
+      `:`<div style="text-align:center;color:var(--muted)">Au tour de <strong>${data.players?.[curPid]?.name}</strong></div>`}
+    `:`<div style="text-align:center;color:var(--muted)">Fin du tour !</div>`}
+  </div>`;
+
+  if (gs.phase==='playing'&&isMyTurn) startPlayerTimer4(gs.timerStart);
+}
+
+let playerTimer4=null;
+function startPlayerTimer4(start) {
+  if (playerTimer4) clearInterval(playerTimer4);
+  playerTimer4=setInterval(()=>{
+    const bar=document.getElementById('p-j4-bar'); const num=document.getElementById('p-j4-num');
+    if (!bar) { clearInterval(playerTimer4); return; }
+    const left=Math.max(0,40-Math.floor((Date.now()-start)/1000));
+    bar.style.width=`${(left/40)*100}%`; num.textContent=left;
+    if (left<10) bar.classList.add('low');
+    if (left===0) clearInterval(playerTimer4);
+  },500);
+}
+
+</script>
+</body>
+</html>
