@@ -604,17 +604,25 @@ function renderGame1Host(container) {
 
   // ── PHASE 1 : afficher les réponses selon le mode ──
   } else if (gs.phase==='show-answers') {
-    const answers=buildAnswersForMode(Q?.answers||gs.answers, gs.mode);
+    const answers = gs.shownAnswers || [];
+    const correctAnswer = Q?.answers?.[Q?.correct ?? 0] || '';
     container.innerHTML=`
       ${Q ? mediaHTML : ''}
       ${Q && !Q.image_only ? `<div class="j1-question fade-in">${Q.text}</div>` : ''}
       <div class="tag tag-gold" style="font-family:Bebas Neue;font-size:1.1rem">${gs.mode?.toUpperCase()||''}</div>
-      ${gs.mode!=='cash' ? `<div class="j1-answers fade-in">${answers.map(a=>`<div class="answer-btn">${a}</div>`).join('')}</div>`
-        : `<div class="instruction" style="font-size:1.5rem">🎤 Réponse à l'oral</div>`}
-      <div class="j1-host-controls">
-        <button class="btn btn-green btn-sm" onclick="revealAnswer1(true)">✅ BONNE RÉPONSE</button>
-        <button class="btn btn-red btn-sm" onclick="revealAnswer1(false)">❌ MAUVAISE</button>
-      </div>
+      ${gs.mode!=='cash'
+        ? `<div class="j1-answers fade-in">
+            ${answers.map(a => `<div class="answer-btn host-answer-clickable" onclick="clickAnswer1('${a.replace(/'/g, "\\'")}')" style="cursor:pointer">${a}</div>`).join('')}
+           </div>
+           <div class="instruction" style="margin-top:0.5rem">👆 Cliquez sur la réponse donnée par le joueur</div>`
+        : `<div style="display:flex;flex-direction:column;align-items:center;gap:1rem">
+             <div class="instruction" style="font-size:1.5rem">🎤 Réponse à l'oral</div>
+             <div style="display:flex;gap:1rem">
+               <button class="btn btn-green btn-sm" onclick="revealAnswer1(true)">✅ BONNE</button>
+               <button class="btn btn-red btn-sm" onclick="revealAnswer1(false)">❌ MAUVAISE</button>
+             </div>
+           </div>`
+      }
     `;
   } else {
     const Q2=QUESTIONS.game1[gs.questionIdx||0];
@@ -649,10 +657,34 @@ window.selectMode1=function(mode) {
 
 window.confirmMode1=async function() {
   if (!STATE.gameState.mode) return showToast('Choisissez un mode d\'abord','error');
-  const gs={...STATE.gameState, phase:'show-answers'};
-  await update(dbRef(rp()),{ gameState:gs });
+  const gs=STATE.gameState;
+  const Q=QUESTIONS.game1[gs.questionIdx||0];
+  const shownAnswers = buildAnswersForMode(Q?.answers||[], gs.mode);
+  await update(dbRef(rp()),{ gameState:{...gs, phase:'show-answers', shownAnswers} });
 };
+  
+window.clickAnswer1=async function(clickedAnswer) {
+  const gs=STATE.gameState;
+  const Q=QUESTIONS.game1[gs.questionIdx||0];
+  const correctAnswer = Q?.answers?.[Q?.correct??0]||'';
+  const isCorrect = clickedAnswer === correctAnswer;
 
+  document.querySelectorAll('.host-answer-clickable').forEach(btn => {
+    const txt = btn.textContent.trim();
+    if (txt === clickedAnswer) {
+      btn.classList.add(isCorrect ? 'correct' : 'wrong');
+      btn.style.pointerEvents = 'none';
+    } else if (txt === correctAnswer && !isCorrect) {
+      setTimeout(() => btn.classList.add('correct'), 400);
+    } else {
+      btn.style.opacity = '0.4';
+    }
+  });
+
+  setTimeout(async () => {
+    await revealAnswer1(isCorrect);
+  }, 800);
+};
 window.revealAnswer1=async function(correct) {
   const gs={...STATE.gameState, phase:'reveal', lastCorrect:correct};
   await update(dbRef(rp()),{ gameState:gs });
