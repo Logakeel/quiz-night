@@ -672,6 +672,10 @@ function renderGame1Host(container) {
   } else if (gs.phase==='show-answers') {
     // Les réponses sont stockées dans gs.shownAnswers pour garder le même ordre
     const answers = gs.shownAnswers || [];
+    const answerButtons = answers.map(a => {
+      const safe = a.replace(/"/g, '&quot;');
+      return `<div class="answer-btn host-answer-clickable" onclick="clickAnswer1(this)" data-answer="${safe}" style="cursor:pointer">${a}</div>`;
+    }).join('');
     const correctAnswer = Q?.answers?.[Q?.correct ?? 0] || '';
     container.innerHTML=`
       ${Q ? mediaHTML : ''}
@@ -679,7 +683,7 @@ function renderGame1Host(container) {
       <div class="tag tag-gold" style="font-family:Bebas Neue;font-size:1.1rem">${gs.mode?.toUpperCase()||''}</div>
       ${gs.mode!=='cash'
         ? `<div class="j1-answers fade-in">
-            ${answers.map(a => `<div class="answer-btn host-answer-clickable" onclick="clickAnswer1(this)" data-answer="${a.replace(/"/g,'&quot;')}" style="cursor:pointer">${a}</div>`).join('')}
+           ${answerButtons}
            </div>
            <div class="instruction" style="margin-top:0.5rem">👆 Cliquez sur la réponse donnée par le joueur</div>`
         : `<div style="display:flex;flex-direction:column;align-items:center;gap:1rem">
