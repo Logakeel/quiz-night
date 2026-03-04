@@ -503,6 +503,22 @@ function listenToRoom() {
 
 function updateLobbyUI(data) {
   show('lobby-screen');
+  if (DEV_MODE) {
+  let panel = document.getElementById('dev-panel-lobby');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'dev-panel-lobby';
+    panel.style.cssText = 'position:fixed;bottom:1rem;right:1rem;background:#1c1c28;border:1px solid #f5c842;border-radius:0.75rem;padding:0.75rem 1rem;z-index:888';
+    document.body.appendChild(panel);
+  }
+  panel.innerHTML = `
+    <div style="font-family:Bebas Neue;color:#f5c842;font-size:0.85rem;margin-bottom:0.5rem">🛠️ DEV — Lancer directement</div>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+      ${[1,2,3,4].map(n=>`<button onclick="devJumpTo(${n})" style="padding:0.35rem 0.7rem;border-radius:0.5rem;border:1px solid #2a2a3d;background:#0a0a0f;color:#6b6b88;cursor:pointer;font-family:Bebas Neue;font-size:0.9rem">J${n}</button>`).join('')}
+      <button onclick="devJumpTo(5)" style="padding:0.35rem 0.7rem;border-radius:0.5rem;border:1px solid #2a2a3d;background:#0a0a0f;color:#6b6b88;cursor:pointer;font-family:Bebas Neue;font-size:0.9rem">🏆</button>
+    </div>
+  `;
+}
   const players=Object.values(data.players||{});
   document.getElementById('player-count-label').textContent=`${players.length}/4 joueurs`;
   const grid=document.getElementById('lobby-players'); grid.innerHTML='';
