@@ -372,7 +372,7 @@ window.checkGate = function() {
     setTimeout(() => err.style.display = 'none', 3000);
   }
 };
-
+const DEV_MODE = true; // ← true = panneau de test visible, false = désactivé
 // ══════════════════════════════════════
 // STATE & UTILS
 // ══════════════════════════════════════
@@ -522,16 +522,55 @@ window.startGame=async function(){
 function renderHostGame() {
   show('game-screen');
   const g=STATE.currentGame;
-  document.getElementById('game-index-display').textContent=g;
-  document.getElementById('game-title').textContent=GAMES[g-1]||'QUIZ NIGHT';
+  const gs=STATE.gameState;
+  document.getElementById('game-index-display').textContent=g<=4?g:'🏆';
+  document.getElementById('game-title').textContent=gs.phase==='scoreboard'?'SCORES':GAMES[g-1]||'QUIZ NIGHT';
   renderHeaderScores();
+  renderDevPanel();
   const content=document.getElementById('game-content'); content.innerHTML='';
-  if (g===1) renderGame1Host(content);
+  if (gs.phase==='scoreboard') renderIntermediateScoreboard(content, gs.nextGame);
+  else if (g===1) renderGame1Host(content);
   else if (g===2) renderGame2Host(content);
   else if (g===3) renderGame3Host(content);
   else if (g===4) renderGame4Host(content);
   else renderFinalScoreboard(content);
 }
+
+function renderDevPanel() {
+  let panel = document.getElementById('dev-panel');
+  if (!DEV_MODE) { if (panel) panel.remove(); return; }
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'dev-panel';
+    panel.style.cssText = 'position:fixed;bottom:1rem;right:1rem;background:#1c1c28;border:1px solid #f5c842;border-radius:0.75rem;padding:0.75rem 1rem;display:flex;gap:0.5rem;align-items:center;z-index:888;flex-wrap:wrap;max-width:320px';
+    document.body.appendChild(panel);
+  }
+  panel.innerHTML = `
+    <div style="font-family:Bebas Neue;color:#f5c842;font-size:0.85rem;width:100%;margin-bottom:0.25rem">🛠️ DEV — Aller au jeu</div>
+    ${[1,2,3,4].map(n=>`<button onclick="devJumpTo(${n})" style="padding:0.35rem 0.7rem;border-radius:0.5rem;border:1px solid ${STATE.currentGame===n?'#f5c842':'#2a2a3d'};background:${STATE.currentGame===n?'rgba(245,200,66,0.15)':'#0a0a0f'};color:${STATE.currentGame===n?'#f5c842':'#6b6b88'};cursor:pointer;font-family:Bebas Neue;font-size:0.9rem">J${n}</button>`).join('')}
+    <button onclick="devJumpTo(5)" style="padding:0.35rem 0.7rem;border-radius:0.5rem;border:1px solid #2a2a3d;background:#0a0a0f;color:#6b6b88;cursor:pointer;font-family:Bebas Neue;font-size:0.9rem">🏆</button>
+  `;
+}
+
+window.devJumpTo = async function(gameNum) {
+  if (!DEV_MODE) return;
+  if (Object.keys(STATE.players).length === 0) {
+    const fakePlayers = {
+      'p_alice': { name:'Alice', emoji:'🦁', score:8, ready:true },
+      'p_bob':   { name:'Bob',   emoji:'🐯', score:5, ready:true },
+      'p_cara':  { name:'Cara',  emoji:'🦊', score:3, ready:true },
+      'p_dan':   { name:'Dan',   emoji:'🐺', score:1, ready:true },
+    };
+    await update(dbRef(rp()), { players: fakePlayers });
+  }
+  let gs={};
+  if (gameNum===1) gs=initGame1();
+  else if (gameNum===2) gs=initGame2();
+  else if (gameNum===3) gs=initGame3();
+  else if (gameNum===4) gs=initGame4();
+  await update(dbRef(rp()), { status:'playing', currentGame:gameNum, gameState:gs });
+  showToast(`→ Jeu ${gameNum}`, 'success');
+};
 
 function renderHeaderScores() {
   const bar=document.getElementById('header-scores'); bar.innerHTML='';
@@ -553,6 +592,10 @@ async function addScore(pid, pts) {
 
 async function nextGame() {
   const next=STATE.currentGame+1;
+  await update(dbRef(rp()),{ currentGame:next, gameState:{ phase:'scoreboard', nextGame:next } });
+}
+
+async function launchNextGame(next) {
   let gs={};
   if (next===2) gs=initGame2();
   else if (next===3) gs=initGame3();
@@ -986,6 +1029,32 @@ function renderScoreboardInline() {
 // ══════════════════════════════════════
 // SCOREBOARD FINAL
 // ══════════════════════════════════════
+function renderIntermediateScoreboard(container, nextGameNum) {
+  const sorted = getPlayersSorted();
+  const medals = ['🥇','🥈','🥉','4️⃣'];
+  const gameNames = ['','Duo/Carré/Cash','L\'Intrus','Sprint de réponses','4 à la suite'];
+  const prevGame = (nextGameNum||2) - 1;
+
+  container.innerHTML=`
+    <div class="section-title fade-in" style="font-size:2rem">FIN DU JEU ${prevGame}</div>
+    <div class="instruction" style="margin-top:-0.5rem">${gameNames[prevGame]||''} · Classement en cours</div>
+    <div class="scoreboard fade-in" style="width:100%;max-width:500px">
+      ${sorted.map((p,i)=>`
+        <div class="score-row" style="animation:fadeIn 0.4s ease ${i*0.1}s both">
+          <div class="score-rank">${medals[i]||i+1}</div>
+          <div class="score-emoji" style="font-size:2rem">${p.emoji}</div>
+          <div class="score-player-name" style="font-size:1.1rem;font-weight:600">${p.name}</div>
+          <div class="score-pts-big" style="font-size:2rem">${p.score} pts</div>
+        </div>`).join('')}
+    </div>
+    ${nextGameNum<=4
+      ? `<div style="text-align:center;color:var(--muted);font-size:0.9rem">Prochain jeu : <strong style="color:var(--gold)">${gameNames[nextGameNum]||''}</strong></div>
+         <button class="btn btn-primary" style="max-width:300px" onclick="launchNextGame(${nextGameNum})">LANCER LE JEU ${nextGameNum} →</button>`
+      : `<button class="btn btn-primary" style="max-width:300px" onclick="launchNextGame(${nextGameNum})">VOIR LES RÉSULTATS FINAUX →</button>`
+    }
+  `;
+}
+  
 function renderFinalScoreboard(container) {
   const medals=['🥇','🥈','🥉','4️⃣'];
   container.innerHTML=`
@@ -1010,6 +1079,7 @@ function renderPlayerView(data) {
     content.innerHTML=`<div class="player-waiting text-center fade-in"><div class="player-waiting-icon">⏳</div><h2>EN ATTENTE</h2><p>L'hôte va lancer la partie…</p><div class="tag tag-gold" style="margin-top:1rem">${STATE.playerName}</div></div>`;
     return;
   }
+  if (gs.phase==='scoreboard') { renderPlayerScoreboard(content, data, gs.nextGame); return; }
   if (game===5) { renderPlayerFinal(content, data); return; }
   if (game===1) renderPlayerGame1(content,gs,data);
   else if (game===2) renderPlayerGame2(content,gs,data);
@@ -1027,7 +1097,35 @@ function renderPlayerFinal(content, data) {
     <div style="font-size:1.5rem;font-family:Bebas Neue">${myScore} points</div>
   </div>`;
 }
+  
+function renderPlayerScoreboard(content, data, nextGameNum) {
+  const players = Object.entries(data.players||{}).map(([id,p])=>({id,...p})).sort((a,b)=>b.score-a.score);
+  const myPid = STATE.playerId;
+  const medals = ['🥇','🥈','🥉','4️⃣'];
+  const gameNames = ['','Duo/Carré/Cash','L\'Intrus','Sprint de réponses','4 à la suite'];
+  const prevGame = (nextGameNum||2)-1;
 
+  content.innerHTML=`<div class="player-question-card fade-in" style="gap:1rem">
+    <div style="text-align:center">
+      <div style="font-family:Bebas Neue;font-size:1.5rem;color:var(--gold)">FIN DU JEU ${prevGame}</div>
+      <div style="font-size:0.8rem;color:var(--muted)">${gameNames[prevGame]||''}</div>
+    </div>
+    <div style="width:100%">
+      ${players.map((p,i)=>`
+        <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.75rem;border-radius:0.5rem;background:${p.id===myPid?'rgba(245,200,66,0.1)':''};border:1px solid ${p.id===myPid?'var(--gold)':'var(--border)'};margin-bottom:0.4rem">
+          <div style="font-family:Bebas Neue;font-size:1.2rem;color:var(--muted);width:1.5rem">${medals[i]||i+1}</div>
+          <div style="font-size:1.2rem">${p.emoji}</div>
+          <div style="flex:1;font-weight:${p.id===myPid?'600':'400'}">${p.name}${p.id===myPid?' (toi)':''}</div>
+          <div style="font-family:Bebas Neue;font-size:1.3rem;color:var(--gold)">${p.score} pts</div>
+        </div>`).join('')}
+    </div>
+    ${nextGameNum<=4
+      ? `<div style="text-align:center;color:var(--muted);font-size:0.85rem">⏳ L'hôte va lancer le jeu ${nextGameNum}…</div>`
+      : `<div style="text-align:center;color:var(--muted);font-size:0.85rem">⏳ Résultats finaux en cours…</div>`
+    }
+  </div>`;
+}
+  
 function renderPlayerGame1(content, gs, data) {
   const pids=gs.playerOrder||Object.keys(data.players||{});
   const curPid=pids[gs.currentPlayerIdx%pids.length];
