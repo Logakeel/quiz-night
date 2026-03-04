@@ -182,8 +182,21 @@
 </head>
 <body>
 
+<!-- GATE -->
+<div id="gate-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;gap:1.5rem">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,8vw,5rem);color:var(--gold);text-align:center">QUIZ NIGHT</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:2rem;width:100%;max-width:380px;display:flex;flex-direction:column;gap:1rem">
+    <div style="font-family:'Bebas Neue';font-size:1.3rem;color:var(--gold)">🔒 Accès privé</div>
+    <div style="font-size:0.85rem;color:var(--muted)">Cette soirée est sur invitation. Entrez le code d'accès.</div>
+    <input class="setup-input" id="gate-input" type="password" placeholder="Code d'accès…" maxlength="30" onkeydown="if(event.key==='Enter') checkGate()">
+    <button class="btn btn-primary" onclick="checkGate()">ENTRER</button>
+    <div id="gate-error" style="color:var(--red);font-size:0.85rem;text-align:center;display:none">❌ Code incorrect</div>
+  </div>
+  <div style="font-size:0.7rem;color:var(--muted)">Accès réservé aux participants de la soirée</div>
+</div>
+
 <!-- SETUP -->
-<div id="setup-screen">
+<div id="setup-screen" style="display:none">
   <div>
     <div class="setup-title">QUIZ NIGHT</div>
     <div class="setup-subtitle">Le jeu de soirée ultime</div>
@@ -239,14 +252,14 @@ import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic
 // Remplacez par votre config sur https://console.firebase.google.com
 // ══════════════════════════════════════
 const firebaseConfig = {
-  apiKey: "AIzaSyDW3uMTNfoK3Nzk5WIme3SEs4FvLKy1kwI",
+ apiKey: "AIzaSyDW3uMTNfoK3Nzk5WIme3SEs4FvLKy1kwI",
   authDomain: "quizzgamers-a15dd.firebaseapp.com",
   databaseURL: "https://quizzgamers-a15dd-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "quizzgamers-a15dd",
   storageBucket: "quizzgamers-a15dd.firebasestorage.app",
   messagingSenderId: "372514225822",
   appId: "1:372514225822:web:5fdd6cc34579cfa7a0458f"
-};
+}
 
 // ══════════════════════════════════════
 // 📋  VOS QUESTIONS — Remplissez ici !
@@ -336,6 +349,27 @@ const QUESTIONS = {
       { label: "🔬 Science",    questions: [{ text:"Symbole chimique de l'or ?", answer:"Au" },{ text:"Planète la plus proche du Soleil ?", answer:"Mercure" },{ text:"Vitesse de la lumière ?", answer:"300 000 km/s" },{ text:"Nombre d'os dans le corps ?", answer:"206" }] },
       { label: "🍽️ Cuisine",   questions: [{ text:"Ingrédient du guacamole ?", answer:"Avocat" },{ text:"Fromage de la pizza Margherita ?", answer:"Mozzarella" },{ text:"Pays des sushis ?", answer:"Japon" },{ text:"Plat national espagnol ?", answer:"Paella" }] },
     ]
+  }
+};
+
+// ══════════════════════════════════════
+// 🔑 MOT DE PASSE — changez-le ici !
+// ══════════════════════════════════════
+const ACCESS_CODE = "soiree2026"; // ← Modifiez avant chaque soirée
+
+window.checkGate = function() {
+  const val = document.getElementById('gate-input').value.trim();
+  const err = document.getElementById('gate-error');
+  if (val === ACCESS_CODE) {
+    document.getElementById('gate-screen').style.display = 'none';
+    document.getElementById('setup-screen').style.display = 'flex';
+    const code = new URLSearchParams(location.search).get('room');
+    if (code) { document.getElementById('join-code').value = code; showToast('Salle ' + code + ' détectée !'); }
+  } else {
+    err.style.display = 'block';
+    document.getElementById('gate-input').value = '';
+    document.getElementById('gate-input').focus();
+    setTimeout(() => err.style.display = 'none', 3000);
   }
 };
 
@@ -445,10 +479,7 @@ window.joinRoom = async function() {
   show('player-screen');
 };
 
-window.addEventListener('load', ()=>{
-  const code=new URLSearchParams(location.search).get('room');
-  if (code) { document.getElementById('join-code').value=code; showToast(`Salle ${code} détectée !`); }
-});
+// Auto-join géré dans checkGate()
 
 function listenToRoom() {
   onValue(dbRef(rp()), snap=>{
