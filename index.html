@@ -1140,7 +1140,7 @@ function renderPlayerScoreboard(content, data, nextGameNum) {
   const myPid = STATE.playerId;
   const myRank = players.findIndex(p=>p.id===myPid)+1;
   const medals = ['🥇','🥈','🥉','4️⃣'];
-  const gameNames = ['','Duo/Carré/Cash','L\'Intrus','Sprint de réponses','4 à la suite'];
+  const gameNames = ["","Duo/Carré/Cash","L'Intrus","Sprint de réponses","4 à la suite"];
   const prevGame = (nextGameNum||2)-1;
 
   content.innerHTML=`<div class="player-question-card fade-in" style="gap:1rem">
