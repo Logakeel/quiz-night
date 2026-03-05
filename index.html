@@ -245,6 +245,34 @@
 
 <script src="questions.js"></script>
 
+<script>
+// ══════════════════════════════════════
+// 🔑 MOT DE PASSE — changez-le ici !
+// ══════════════════════════════════════
+var ACCESS_CODE = "soiree2026"; // ← Modifiez avant chaque soirée
+
+// ══════════════════════════════════════
+// 🛠️  MODE DEV — mettez false en prod !
+// ══════════════════════════════════════
+var DEV_MODE = true; // ← true = panneau de test visible, false = désactivé
+
+function checkGate() {
+  var val = document.getElementById('gate-input').value.trim();
+  var err = document.getElementById('gate-error');
+  if (val === ACCESS_CODE) {
+    document.getElementById('gate-screen').style.display = 'none';
+    document.getElementById('setup-screen').style.display = 'flex';
+    var code = new URLSearchParams(location.search).get('room');
+    if (code) { document.getElementById('join-code').value = code; }
+  } else {
+    err.style.display = 'block';
+    document.getElementById('gate-input').value = '';
+    document.getElementById('gate-input').focus();
+    setTimeout(function() { err.style.display = 'none'; }, 3000);
+  }
+}
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -261,32 +289,6 @@ const firebaseConfig = {
   storageBucket: "quizzgamers-a15dd.firebasestorage.app",
   messagingSenderId: "372514225822",
   appId: "1:372514225822:web:5fdd6cc34579cfa7a0458f"
-};
-
-// ══════════════════════════════════════
-// 🔑 MOT DE PASSE — changez-le ici !
-// ══════════════════════════════════════
-const ACCESS_CODE = "soiree2026"; // ← Modifiez avant chaque soirée
-
-// ══════════════════════════════════════
-// 🛠️  MODE DEV — mettez false en prod !
-// ══════════════════════════════════════
-const DEV_MODE = true; // ← true = panneau de test visible, false = désactivé
-
-window.checkGate = function() {
-  const val = document.getElementById('gate-input').value.trim();
-  const err = document.getElementById('gate-error');
-  if (val === ACCESS_CODE) {
-    document.getElementById('gate-screen').style.display = 'none';
-    document.getElementById('setup-screen').style.display = 'flex';
-    const code = new URLSearchParams(location.search).get('room');
-    if (code) { document.getElementById('join-code').value = code; showToast('Salle ' + code + ' détectée !'); }
-  } else {
-    err.style.display = 'block';
-    document.getElementById('gate-input').value = '';
-    document.getElementById('gate-input').focus();
-    setTimeout(() => err.style.display = 'none', 3000);
-  }
 };
 
 // ══════════════════════════════════════
