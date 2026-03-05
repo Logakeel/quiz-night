@@ -277,22 +277,12 @@ const firebaseConfig = {
   const ACCESS_CODE = "soiree2026";
 
   // DEV MODE
-  const DEV_MODE = true;
+  const DEV_MODE = true;// ← true = panneau de test visible, false = désactivé
 
   // Plus de const QUESTIONS = { ... } ici, il vient de questions.js
   
   // reste du code...
   </script>
-
-// ══════════════════════════════════════
-// 🔑 MOT DE PASSE — changez-le ici !
-// ══════════════════════════════════════
-const ACCESS_CODE = "soiree2026"; // ← Modifiez avant chaque soirée
-
-// ══════════════════════════════════════
-// 🛠️  MODE DEV — mettez false en prod !
-// ══════════════════════════════════════
-const DEV_MODE = true; // ← true = panneau de test visible, false = désactivé
 
 window.checkGate = function() {
   const val = document.getElementById('gate-input').value.trim();
