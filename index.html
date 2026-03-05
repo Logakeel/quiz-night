@@ -559,7 +559,7 @@ async function launchNextGame(next) {
 function initGame1() {
   // Mélange toutes les questions et stocke l'ordre dans Firebase
   const indices = QUESTIONS.game1.map((_,i) => i);
-  const shuffled = indices.sort(() => Math.random() - 0.5);
+  const shuffled = [...indices].sort(() => Math.random() - 0.5);
   return { phase:'show-question', currentPlayerIdx:0, playerOrder:Object.keys(STATE.players), questionIdx:0, shuffledIndices:shuffled, mode:null, answers:[], correctAnswer:0, questionsPerPlayer:3, questionCount:0 };
 }
 
