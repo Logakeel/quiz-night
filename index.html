@@ -265,92 +265,9 @@ const firebaseConfig = {
 // 📋  VOS QUESTIONS — Remplissez ici !
 // Copiez les URLs Firebase Storage après avoir uploadé vos fichiers
 // ══════════════════════════════════════
-const QUESTIONS = {
-  game1: [
-    // ── Format texte simple ──
-    {
-      text: "Quel est le plus grand océan du monde ?",
-      media_url: null,
-      media_type: null,   // null | 'image' | 'audio'
-      image_only: false,  // true = pas de texte, l'image EST la question
-      answers: ["Océan Pacifique", "Océan Atlantique", "Océan Indien", "Océan Arctique"],
-      correct: 0
-    },
-    // ── Format image + texte ──
-    {
-      text: "Quel monument est représenté ici ?",
-      media_url: "https://firebasestorage.googleapis.com/VOTRE_URL/monument.jpg",
-      media_type: "image",
-      image_only: false,
-      answers: ["La Tour Eiffel", "Big Ben", "La Sagrada Familia", "Le Colisée"],
-      correct: 0
-    },
-    // ── Format image seule (pas de texte) ──
-    {
-      text: "",
-      media_url: "https://firebasestorage.googleapis.com/VOTRE_URL/flag.jpg",
-      media_type: "image",
-      image_only: true,   // ← L'image remplace la question
-      answers: ["France", "Italie", "Belgique", "Luxembourg"],
-      correct: 0
-    },
-    // ── Format audio ──
-    {
-      text: "Quel instrument entendez-vous ?",
-      media_url: "https://firebasestorage.googleapis.com/VOTRE_URL/instrument.mp3",
-      media_type: "audio",
-      image_only: false,
-      answers: ["Violon", "Violoncelle", "Alto", "Contrebasse"],
-      correct: 0
-    },
-  ],
 
-  game2: [
-    // Round 1
-    {
-      question: "Capitales européennes (1 intrus)",
-      media_url: null,
-      media_type: null,
-      answers: ["Lyon","Paris","Berlin","Madrid","Rome","Lisbonne","Vienne","Amsterdam","Bruxelles"],
-      wrong_index: 0   // ← Index de la mauvaise réponse (Lyon n'est pas une capitale)
-    },
-    // Round 2 — avec image
-    {
-      question: "Logos de marques",
-      media_url: "https://firebasestorage.googleapis.com/VOTRE_URL/logos.jpg",
-      media_type: "image",
-      answers: ["Ikea","Apple","Google","Samsung","Microsoft","Amazon","Meta","Netflix","Pepsi"],
-      wrong_index: 8   // ← Pepsi est l'intrus si le logo n'est pas là
-    },
-    // Round 3
-    {
-      question: "Films Marvel (1 imposteur DC)",
-      media_url: null,
-      media_type: null,
-      answers: ["Batman Begins","Iron Man","Thor","Captain America","Avengers","Black Panther","Spider-Man","Doctor Strange","Ant-Man"],
-      wrong_index: 0
-    },
-  ],
-
-  game3: [
-    // Un objet par joueur (slot 0→3)
-    { question: "Citez le plus de pays d'Afrique possible", media_url: null, media_type: null },
-    { question: "Citez le plus de capitales européennes possible", media_url: null, media_type: null },
-    { question: "Citez le plus de Pokémon de feu possible", media_url: null, media_type: null },
-    { question: "Citez le plus de sports olympiques possible", media_url: null, media_type: null },
-  ],
-
-  game4: {
-    themes: [
-      { label: "🎬 Cinéma",     questions: [{ text:"Réalisateur de Titanic ?", answer:"James Cameron" },{ text:"Actrice d'Hermione Granger ?", answer:"Emma Watson" },{ text:"Film avec Mufasa ?", answer:"Le Roi Lion" },{ text:"Studio de Pixar ?", answer:"Disney/Pixar" }] },
-      { label: "🎵 Musique",    questions: [{ text:"Groupe qui chante Bohemian Rhapsody ?", answer:"Queen" },{ text:"Roi de la pop ?", answer:"Michael Jackson" },{ text:"Instrument d'Elton John ?", answer:"Piano" },{ text:"Daft Punk vient de ?", answer:"France" }] },
-      { label: "⚽ Sport",      questions: [{ text:"Joueurs dans une équipe de foot ?", answer:"11" },{ text:"Pays avec le plus de Coupes du Monde ?", answer:"Brésil (5)" },{ text:"Sport avec des balais sur glace ?", answer:"Curling" },{ text:"JO d'été 2024 ?", answer:"Paris" }] },
-      { label: "🌍 Géographie", questions: [{ text:"Capitale de l'Australie ?", answer:"Canberra" },{ text:"Plus grand pays du monde ?", answer:"Russie" },{ text:"Continent du Maroc ?", answer:"Afrique" },{ text:"Plus long fleuve du monde ?", answer:"Nil / Amazone" }] },
-      { label: "🔬 Science",    questions: [{ text:"Symbole chimique de l'or ?", answer:"Au" },{ text:"Planète la plus proche du Soleil ?", answer:"Mercure" },{ text:"Vitesse de la lumière ?", answer:"300 000 km/s" },{ text:"Nombre d'os dans le corps ?", answer:"206" }] },
-      { label: "🍽️ Cuisine",   questions: [{ text:"Ingrédient du guacamole ?", answer:"Avocat" },{ text:"Fromage de la pizza Margherita ?", answer:"Mozzarella" },{ text:"Pays des sushis ?", answer:"Japon" },{ text:"Plat national espagnol ?", answer:"Paella" }] },
-    ]
-  }
-};
+  <script type="module">
+  <script src="questions.js"></script>
 
 // ══════════════════════════════════════
 // 🔑 MOT DE PASSE — changez-le ici !
@@ -630,7 +547,10 @@ async function launchNextGame(next) {
 // JEU 1 : DUO / CARRÉ / CASH
 // ══════════════════════════════════════
 function initGame1() {
-  return { phase:'show-question', currentPlayerIdx:0, playerOrder:Object.keys(STATE.players), questionIdx:0, mode:null, answers:[], correctAnswer:0, questionsPerPlayer:3, questionCount:0 };
+  // Mélange toutes les questions et stocke l'ordre dans Firebase
+  const indices = QUESTIONS.game1.map((_,i) => i);
+  const shuffled = indices.sort(() => Math.random() - 0.5);
+  return { phase:'show-question', currentPlayerIdx:0, playerOrder:Object.keys(STATE.players), questionIdx:0, shuffledIndices:shuffled, mode:null, answers:[], correctAnswer:0, questionsPerPlayer:3, questionCount:0 };
 }
 
 function modePoints(m) { return m==='duo'?1:m==='carre'?2:4; }
@@ -729,7 +649,7 @@ window.selectMode1=function(mode) {
 window.confirmMode1=async function() {
   if (!STATE.gameState.mode) return showToast('Choisissez un mode d\'abord','error');
   const gs=STATE.gameState;
-  const Q=QUESTIONS.game1[gs.questionIdx||0];
+  const Q=QUESTIONS.game1[(gs.shuffledIndices||[])[gs.questionIdx||0] ?? gs.questionIdx ?? 0];
   // Générer et stocker l'ordre des réponses dans Firebase pour cohérence
   const shownAnswers = buildAnswersForMode(Q?.answers||[], gs.mode);
   await update(dbRef(rp()),{ gameState:{...gs, phase:'show-answers', shownAnswers} });
@@ -739,7 +659,7 @@ window.confirmMode1=async function() {
 window.clickAnswer1=async function(el) {
   const clickedAnswer = el.dataset.answer;
   const gs=STATE.gameState;
-  const Q=QUESTIONS.game1[gs.questionIdx||0];
+  const Q=QUESTIONS.game1[(gs.shuffledIndices||[])[gs.questionIdx||0] ?? gs.questionIdx ?? 0];
   const correctAnswer = Q?.answers?.[Q?.correct??0]||'';
   const isCorrect = clickedAnswer === correctAnswer;
 
@@ -1170,7 +1090,7 @@ function renderPlayerGame1(content, gs, data) {
   const curPid=pids[gs.currentPlayerIdx%pids.length];
   const isMyTurn=curPid===STATE.playerId;
   const myScore=data.players?.[STATE.playerId]?.score||0;
-  const Q=QUESTIONS.game1[gs.questionIdx||0];
+  const Q=QUESTIONS.game1[(gs.shuffledIndices||[])[gs.questionIdx||0] ?? gs.questionIdx ?? 0];
 
   // Texte d'état selon la phase et si c'est mon tour
   let phaseBlock='';
