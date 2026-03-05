@@ -23,6 +23,21 @@
 //
 // ============================================================
 
+// ============================================================
+//  AVATARS — Ajoutez vos images ici
+//  Uploadez vos illustrations sur Firebase Storage (ou autre)
+//  et collez les URLs ci-dessous.
+//  Le nom s'affiche sous l'avatar dans le lobby.
+// ============================================================
+const AVATARS = [
+  { name: "Mystère",  url: null },  // null = emoji générique si pas d'image
+  { name: "Alice",    url: "https://firebasestorage.googleapis.com/VOTRE_URL/alice.png" },
+  { name: "Bob",      url: "https://firebasestorage.googleapis.com/VOTRE_URL/bob.png" },
+  { name: "Cara",     url: "https://firebasestorage.googleapis.com/VOTRE_URL/cara.png" },
+  { name: "Dan",      url: "https://firebasestorage.googleapis.com/VOTRE_URL/dan.png" },
+  // Ajoutez autant d'avatars que vous voulez...
+];
+
 const QUESTIONS = {
 
   // ══════════════════════════════════════════════════════════
