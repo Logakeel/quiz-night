@@ -266,8 +266,23 @@ const firebaseConfig = {
 // Copiez les URLs Firebase Storage après avoir uploadé vos fichiers
 // ══════════════════════════════════════
 
-  <script type="module">
+<!-- juste avant la fermeture </body> ou avant le script module -->
   <script src="questions.js"></script>
+
+  <script type="module">
+  import { initializeApp } from "...";
+  import { getDatabase, ... } from "...";
+
+  // 🔑 MOT DE PASSE
+  const ACCESS_CODE = "soiree2026";
+
+  // DEV MODE
+  const DEV_MODE = true;
+
+  // Plus de const QUESTIONS = { ... } ici, il vient de questions.js
+  
+  // reste du code...
+  </script>
 
 // ══════════════════════════════════════
 // 🔑 MOT DE PASSE — changez-le ici !
