@@ -349,7 +349,7 @@ const QUESTIONS = {
           { text: "Plat national espagnol ?",            answer: "Paella"     },
           { text: "Épice la plus chère du monde ?",      answer: "Safran"     },
         ]
-      },
+      }
     ]
   }
 
