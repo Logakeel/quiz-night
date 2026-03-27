@@ -666,7 +666,7 @@ function initGame1() {
     const indices = qs.map((_,i) => i);
     shufflesByPlayer[pid] = [...indices].sort(() => Math.random() - 0.5);
   });
-  return { phase:'show-question', currentPlayerIdx:0, playerOrder:pids, questionIdx:0, shufflesByPlayer, mode:null, answers:[], correctAnswer:0, questionsPerPlayer:3, questionCount:0 };
+  return { phase:'show-question', currentPlayerIdx:0, playerOrder:pids, questionIdx:0, shufflesByPlayer, mode:null, answers:[], correctAnswer:0, questionsPerPlayer:6, questionCount:0 };
 }
 
 function modePoints(m) { return m==='duo'?1:m==='carre'?2:4; }
