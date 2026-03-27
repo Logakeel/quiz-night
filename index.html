@@ -629,13 +629,13 @@ async function addScore(pid, pts) {
   await update(dbRef(`${rp()}/players/${pid}`),{ score:cur+pts });
 }
 
-async function nextGame() {
+window.nextGame = async function() {
   const next=STATE.currentGame+1;
   // Afficher le scoreboard intermédiaire avant le prochain jeu
   await update(dbRef(rp()),{ currentGame:next, gameState:{ phase:'scoreboard', nextGame:next } });
 }
 
-async function launchNextGame(next) {
+window.launchNextGame = async function(next) {
   let gs={};
   if (next===2) gs=initGame2();
   else if (next===3) gs=initGame3();
