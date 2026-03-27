@@ -145,7 +145,7 @@ const QUESTIONS = {
         correct: 4
       },
     ]
-  }
+  },
     
   // ══════════════════════════════════════════════════════════
   // JEU 2 — L'INTRUS (collectif, pas de sets)
