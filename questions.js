@@ -15,10 +15,10 @@
 
 const AVATARS = [
   { name: "Mystère", url: null },
-  { name: "Nico",   url: "https://firebasestorage.googleapis.com/VOTRE_URL/alice.png" },
-  { name: "Toto",     url: "https://firebasestorage.googleapis.com/VOTRE_URL/bob.png" },
-  { name: "Guigui",    url: "https://firebasestorage.googleapis.com/VOTRE_URL/cara.png" },
-  { name: "Dan",     url: "https://firebasestorage.googleapis.com/VOTRE_URL/dan.png" },
+  { name: "Nico",   url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Avatars%2Fnico.png?alt=media&token=8cdbb989-2e94-40f7-b809-5d4e18eb598d" },
+  { name: "Toto",     url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Avatars%2Ftoto.png?alt=media&token=d6e1bc15-9a3c-4ec9-a3b8-7bba6cc4f9c2" },
+  { name: "Guigui",    url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Avatars%2Fguigui.png?alt=media&token=a784a4ba-6195-4cb8-9fc3-6ba7f5a438a4" },
+  { name: "Dan",     url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Avatars%2Fbrave_XGG8JTPUZP.png?alt=media&token=380c4c01-a934-47fd-b804-736d961250a3" },
 ];
 
 const QUESTIONS = {
@@ -51,13 +51,13 @@ const QUESTIONS = {
       },
       {
         text: "Qui est ce personnage ?",
-        media_url: null, media_type: null, image_only: false,
+        media_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%201%2Fnico%20p1.png?alt=media&token=caaf6a2c-ec74-4410-aa57-68cd697538d2", media_type: "image", image_only: false,
         answers: ["Mussolini", "Resetti", "Taup Nook", "Keke"],
         correct: 2
       },
       {
         text: "D'où vient ce son ?",
-        media_url: null, media_type: null, image_only: false,
+        media_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%201%2FQuizz%20Nico.wav?alt=media&token=7ba6b581-78c2-4d9d-9039-648e9abc8f93", media_type: "audio", image_only: false,
         answers: ["Animal Crossing", "Pokemon Ranger", "Neverwinter", "Diablo 3"],
         correct: 2
       },
@@ -72,13 +72,13 @@ const QUESTIONS = {
     "Set Toto": [
       {
         text: "Comment s'appelle ce personnage ?",
-        media_url: null, media_type: null, image_only: false,
-        answers: ["4", "5", "6", "7"],
-        correct: 2
+        media_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%201%2Ftoto%20p1.webp?alt=media&token=f0be6a20-7b6f-4c6a-8586-9fd4bd7d7d97", media_type: "image", image_only: false,
+        answers: ["Oleg", "Pierce", "Shaundi", "Josh"],
+        correct: 1
       },
       {
         text: "D'où vient ce son ?",
-        media_url: null, media_type: null, image_only: false,
+        media_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%201%2FQuizz%20Toto.wav?alt=media&token=857a9069-45c5-4c42-9837-8bd52b880776", media_type: "audio", image_only: false,
         answers: ["Overwatch", "Doom", "Helldivers 2", "Spiderman"],
         correct: 1
       },
@@ -181,15 +181,15 @@ const QUESTIONS = {
   media_url: null,
   media_type: null,
   answers: [
-    { image: "https://firebasestorage.googleapis.com/VOTRE_URL/img1.jpg" },  // ← INTRUS (wrong_index: 0)
-    { image: "https://firebasestorage.googleapis.com/VOTRE_URL/img2.jpg" },
-    { image: "https://firebasestorage.googleapis.com/VOTRE_URL/img3.jpg" },
-    { image: "https://firebasestorage.googleapis.com/VOTRE_URL/img4.jpg" },
-    { image: "https://firebasestorage.googleapis.com/VOTRE_URL/img5.jpg" },
-    { image: "https://firebasestorage.googleapis.com/VOTRE_URL/img6.jpg" },
-    { image: "https://firebasestorage.googleapis.com/VOTRE_URL/img7.jpg" },
-    { image: "https://firebasestorage.googleapis.com/VOTRE_URL/img8.jpg" },
-    { image: "https://firebasestorage.googleapis.com/VOTRE_URL/img9.jpg" },
+    { image: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%203%2Fminecraft1.png?alt=media&token=ca27409b-2ec6-4f19-ba93-b9081a8143df" },  // ← INTRUS (wrong_index: 0)
+    { image: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%203%2Fminecraft2.png?alt=media&token=94d8051b-a614-4aa0-815c-bcf3677c1b05" },
+    { image: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%203%2Fminecraft3.png?alt=media&token=ead68b7c-3630-4c68-8608-d32dabbf7644" },
+    { image: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%203%2Fminecraft4.png?alt=media&token=f15c82e6-94c2-4ca2-87cf-e22867d0d0f5" },
+    { image: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%203%2Fminecraft5.png?alt=media&token=f4a414e3-767a-4917-8b13-4c11cc1fe0d3" },
+    { image: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%203%2Fminecraft6.png?alt=media&token=9f61c6d4-8081-442a-8827-347af34524af" },
+    { image: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%203%2Fminecraft7.png?alt=media&token=6bea4c50-abd0-432a-a5e6-9e5e868f1694" },
+    { image: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%203%2Fminecraft8.png?alt=media&token=4932c2be-385c-4587-9566-7815f2aa194d" },
+    { image: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%203%2Fminecraft8.png?alt=media&token=4932c2be-385c-4587-9566-7815f2aa194d" },
   ],
   wrong_index: 0
 },
@@ -216,24 +216,24 @@ const QUESTIONS = {
   // ══════════════════════════════════════════════════════════
   game5: [
     {
-      image_url: "https://firebasestorage.googleapis.com/VOTRE_URL/qui1.jpg",
-      answer: "Tour Eiffel",
-      hint: "Monument français"
+      image_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%205%2FHogwarts02.webp?alt=media&token=80cf9bcc-4d7b-4c05-b5b3-93bff8044327",
+      answer: "Poudlard",
+      hint: "Dragée"
     },
     {
-      image_url: "https://firebasestorage.googleapis.com/VOTRE_URL/qui2.jpg",
-      answer: "Albert Einstein",
-      hint: "Scientifique du XXe siècle"
+      image_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%205%2Fbridge.jpg?alt=media&token=f08b0c3e-9e49-49a2-8f7d-11be35ee7e1d",
+      answer: "Sanctuary II",
+      hint: "Lobby"
     },
     {
-      image_url: "https://firebasestorage.googleapis.com/VOTRE_URL/qui3.jpg",
-      answer: "Usain Bolt",
-      hint: "Athlète jamaïcain"
+      image_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%205%2Fceleb1.jpeg?alt=media&token=edea8a11-10fb-4b95-960b-428bb7bb98d3",
+      answer: "Marion Cotillard",
+      hint: "Mort Nulle"
     },
     {
-      image_url: "https://firebasestorage.googleapis.com/VOTRE_URL/qui4.jpg",
-      answer: "Le Colisée",
-      hint: "Monument romain"
+      image_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%205%2Fceleb2.webp?alt=media&token=4175135c-81d4-4d34-9700-96143fd8c3af",
+      answer: "Dave",
+      hint: "Faux Claude"
     },
   ],
 
@@ -246,37 +246,37 @@ const QUESTIONS = {
   // ══════════════════════════════════════════════════════════
   game6: [
     {
-      audio_url: "https://firebasestorage.googleapis.com/VOTRE_URL/chanson1.mp3",
+      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
       effect: "reverse",
       answer: "Bohemian Rhapsody",
       artist: "Queen"
     },
     {
-      audio_url: "https://firebasestorage.googleapis.com/VOTRE_URL/chanson2.mp3",
+      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
       effect: "pitch_high",
       answer: "Thriller",
       artist: "Michael Jackson"
     },
     {
-      audio_url: "https://firebasestorage.googleapis.com/VOTRE_URL/chanson3.mp3",
+      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
       effect: "slow",
       answer: "All Star",
       artist: "Smash Mouth"
     },
     {
-      audio_url: "https://firebasestorage.googleapis.com/VOTRE_URL/chanson4.mp3",
+      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
       effect: "noise",
       answer: "Eye of the Tiger",
       artist: "Survivor"
     },
     {
-      audio_url: "https://firebasestorage.googleapis.com/VOTRE_URL/chanson5.mp3",
+      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
       effect: "fast",
       answer: "Smooth Criminal",
       artist: "Michael Jackson"
     },
     {
-      audio_url: "https://firebasestorage.googleapis.com/VOTRE_URL/chanson6.mp3",
+      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
       effect: "pitch_low",
       answer: "Never Gonna Give You Up",
       artist: "Rick Astley"
