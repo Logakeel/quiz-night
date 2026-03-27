@@ -26,7 +26,6 @@ const QUESTIONS = {
   // ══════════════════════════════════════════════════════════
   // JEU 1 — SETS PAR JOUEUR
   // Chaque clé = un nom de set que l'hôte pourra assigner.
-  // Mettez autant de questions que vous voulez par set.
   // ══════════════════════════════════════════════════════════
   game1Sets: {
 
@@ -145,7 +144,7 @@ const QUESTIONS = {
         answers: ["Feu", "Plante", "Roche", "Glace"],
         correct: 4
       },
-    ],
+    ]
   }
     
   // ══════════════════════════════════════════════════════════
@@ -173,7 +172,7 @@ const QUESTIONS = {
     {
       question: "Quelle association est correcte ?",
       media_url: null, media_type: null,
-      answers: ["Nevermind – Nirvana","Rust in Peace - Megadeth","Powerage - AC/DC","Mutter - Rammstein","Blackout - Scorpion","The Wall - Pink Floyd","Shenanigans - Blink182","The Game - Queen","Achtung Baby - U2"],
+      answers: ["Nevermind - Nirvana","Rust in Peace - Megadeth","Powerage - AC/DC","Mutter - Rammstein","Blackout - Scorpion","The Wall - Pink Floyd","Shenanigans - Blink182","The Game - Queen","Achtung Baby - U2"],
       wrong_index: 6
     },
     {
@@ -192,7 +191,7 @@ const QUESTIONS = {
     { image: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%203%2Fminecraft8.png?alt=media&token=4932c2be-385c-4587-9566-7815f2aa194d" },
   ],
   wrong_index: 0
-},
+    }
   ],
 
   // ══════════════════════════════════════════════════════════
@@ -208,82 +207,7 @@ const QUESTIONS = {
   // ══════════════════════════════════════════════════════════
   // JEU 4 — 4 À LA SUITE (collectif, pas de sets)
   // ══════════════════════════════════════════════════════════
-  // ══════════════════════════════════════════════════════════
-  // JEU 5 — QUI EST-CE ?
-  // image_url : URL de l'image (Firebase Storage ou autre)
-  // answer    : la réponse attendue (affichée à la révélation)
-  // hint      : indice optionnel affiché sous l'image
-  // ══════════════════════════════════════════════════════════
-  game5: [
-    {
-      image_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%205%2FHogwarts02.webp?alt=media&token=80cf9bcc-4d7b-4c05-b5b3-93bff8044327",
-      answer: "Poudlard",
-      hint: "Dragée"
-    },
-    {
-      image_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%205%2Fbridge.jpg?alt=media&token=f08b0c3e-9e49-49a2-8f7d-11be35ee7e1d",
-      answer: "Sanctuary II",
-      hint: "Lobby"
-    },
-    {
-      image_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%205%2Fceleb1.jpeg?alt=media&token=edea8a11-10fb-4b95-960b-428bb7bb98d3",
-      answer: "Marion Cotillard",
-      hint: "Mort Nulle"
-    },
-    {
-      image_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%205%2Fceleb2.webp?alt=media&token=4175135c-81d4-4d34-9700-96143fd8c3af",
-      answer: "Dave",
-      hint: "Faux Claude"
-    },
-  ],
-
-  // ══════════════════════════════════════════════════════════
-  // JEU 6 — QUEL EST CE SON ?
-  // audio_url : URL du fichier audio original (mp3/ogg)
-  // effect    : "reverse" | "pitch_low" | "pitch_high" | "slow" | "fast" | "noise"
-  // answer    : titre de la chanson (affiché à la révélation)
-  // artist    : artiste (optionnel)
-  // ══════════════════════════════════════════════════════════
-  game6: [
-    {
-      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
-      effect: "reverse",
-      answer: "Bohemian Rhapsody",
-      artist: "Queen"
-    },
-    {
-      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
-      effect: "pitch_high",
-      answer: "Thriller",
-      artist: "Michael Jackson"
-    },
-    {
-      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
-      effect: "slow",
-      answer: "All Star",
-      artist: "Smash Mouth"
-    },
-    {
-      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
-      effect: "noise",
-      answer: "Eye of the Tiger",
-      artist: "Survivor"
-    },
-    {
-      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
-      effect: "fast",
-      answer: "Smooth Criminal",
-      artist: "Michael Jackson"
-    },
-    {
-      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
-      effect: "pitch_low",
-      answer: "Never Gonna Give You Up",
-      artist: "Rick Astley"
-    },
-  ],
-
-  game4: {
+ game4: {
     themes: [
       {
         label: "🎬 Cinéma",
@@ -349,8 +273,83 @@ const QUESTIONS = {
           { text: "Plat national espagnol ?",            answer: "Paella"     },
           { text: "Épice la plus chère du monde ?",      answer: "Safran"     },
         ]
-      },
+      }
     ]
-  }
+  };
+  // ══════════════════════════════════════════════════════════
+  // JEU 5 — QUI EST-CE ?
+  // image_url : URL de l'image (Firebase Storage ou autre)
+  // answer    : la réponse attendue (affichée à la révélation)
+  // hint      : indice optionnel affiché sous l'image
+  // ══════════════════════════════════════════════════════════
+  game5: [
+    {
+      image_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%205%2FHogwarts02.webp?alt=media&token=80cf9bcc-4d7b-4c05-b5b3-93bff8044327",
+      answer: "Poudlard",
+      hint: "Dragée"
+    },
+    {
+      image_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%205%2Fbridge.jpg?alt=media&token=f08b0c3e-9e49-49a2-8f7d-11be35ee7e1d",
+      answer: "Sanctuary II",
+      hint: "Lobby"
+    },
+    {
+      image_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%205%2Fceleb1.jpeg?alt=media&token=edea8a11-10fb-4b95-960b-428bb7bb98d3",
+      answer: "Marion Cotillard",
+      hint: "Mort Nulle"
+    },
+    {
+      image_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%205%2Fceleb2.webp?alt=media&token=4175135c-81d4-4d34-9700-96143fd8c3af",
+      answer: "Dave",
+      hint: "Faux Claude"
+    }
+  ],
 
+  // ══════════════════════════════════════════════════════════
+  // JEU 6 — QUEL EST CE SON ?
+  // audio_url : URL du fichier audio original (mp3/ogg)
+  // effect    : "reverse" | "pitch_low" | "pitch_high" | "slow" | "fast" | "noise"
+  // answer    : titre de la chanson (affiché à la révélation)
+  // artist    : artiste (optionnel)
+  // ══════════════════════════════════════════════════════════
+  game6: [
+    {
+      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
+      effect: "reverse",
+      answer: "Bohemian Rhapsody",
+      artist: "Queen"
+    },
+    {
+      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
+      effect: "pitch_high",
+      answer: "Thriller",
+      artist: "Michael Jackson"
+    },
+    {
+      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
+      effect: "slow",
+      answer: "All Star",
+      artist: "Smash Mouth"
+    },
+    {
+      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
+      effect: "noise",
+      answer: "Eye of the Tiger",
+      artist: "Survivor"
+    },
+    {
+      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
+      effect: "fast",
+      answer: "Smooth Criminal",
+      artist: "Michael Jackson"
+    },
+    {
+      audio_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%206%2Facdc.mp3?alt=media&token=b16cadc1-a4b9-4ff9-ae05-677a3717a4bc",
+      effect: "pitch_low",
+      answer: "Never Gonna Give You Up",
+      artist: "Rick Astley"
+    }
+  ]
+
+ 
 };
