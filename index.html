@@ -110,8 +110,7 @@
   /* ── JEU 2 ── */
   .j2-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; width:100%; max-width:700px; }
   .j2-answer { padding:1rem; border-radius:0.75rem; border:2px solid var(--border); background:var(--surface2); cursor:pointer; text-align:center; font-size:0.95rem; transition:all 0.3s; min-height:80px; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
-  .j2-answer img { width:100%; height:100%; object-fit:cover; border-radius:0.5rem; display:block; position:absolute; inset:0; }
-  .j2-answer.img-mode { padding:0; min-height:100px; }
+
   .j2-answer:hover:not(.revealed):not(.wrong) { border-color:var(--blue); }
   .j2-answer.revealed { opacity:0.3; border-color:var(--border); transform:scale(0.95); }
   .j2-answer.wrong { border-color:var(--red); background:rgba(255,77,109,0.2); color:var(--red); font-weight:600; animation:shake 0.4s ease; }
@@ -468,7 +467,7 @@ window.startGame=async function(){
   showAssignmentScreen();
 };
 
-window.showAssignmentScreen = function() {
+function showAssignmentScreen() {
   const players = Object.entries(STATE.players);
   const setNames = Object.keys(QUESTIONS.game1Sets || {});
   const sprintSetNames = Object.keys(QUESTIONS.game3Sets || {});
@@ -630,13 +629,13 @@ async function addScore(pid, pts) {
   await update(dbRef(`${rp()}/players/${pid}`),{ score:cur+pts });
 }
 
-window.nextGame = async function() {
+async function nextGame() {
   const next=STATE.currentGame+1;
   // Afficher le scoreboard intermédiaire avant le prochain jeu
   await update(dbRef(rp()),{ currentGame:next, gameState:{ phase:'scoreboard', nextGame:next } });
 }
 
-window.launchNextGame = async function(next) {
+async function launchNextGame(next) {
   let gs={};
   if (next===2) gs=initGame2();
   else if (next===3) gs=initGame3();
@@ -666,7 +665,7 @@ function initGame1() {
     const indices = qs.map((_,i) => i);
     shufflesByPlayer[pid] = [...indices].sort(() => Math.random() - 0.5);
   });
-  return { phase:'show-question', currentPlayerIdx:0, playerOrder:pids, questionIdx:0, shufflesByPlayer, mode:null, answers:[], correctAnswer:0, questionsPerPlayer:6, questionCount:0 };
+  return { phase:'show-question', currentPlayerIdx:0, playerOrder:pids, questionIdx:0, shufflesByPlayer, mode:null, answers:[], correctAnswer:0, questionsPerPlayer:3, questionCount:0 };
 }
 
 function modePoints(m) { return m==='duo'?1:m==='carre'?2:4; }
@@ -857,9 +856,11 @@ function renderGame2Host(container) {
         ${roundData.answers.map((a,i)=>{
           const isImg = typeof a === 'object' && a.image;
           const isWrong = i === roundData.wrong_index;
-          return `<div class="j2-answer${isWrong?' wrong':''}${isImg?' img-mode':''}">
-            ${isImg ? `<img src="${a.image}" alt="">` : (isWrong ? `❌ ${a}` : a)}
-            ${isWrong ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,77,109,0.7);font-size:1.5rem;border-radius:0.5rem">❌</div>' : ''}
+          return `<div class="j2-answer${isWrong?' wrong':''}${isImg?' img-mode':''}" style="position:relative">
+            ${isImg
+              ? `<img src="${a.image}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:0.6rem;display:block;background:var(--surface2)">`
+              : (isWrong ? `❌ ${a}` : a)}
+            ${isWrong && isImg ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,77,109,0.6);font-size:2rem;border-radius:0.6rem">❌</div>' : ''}
           </div>`;
         }).join('')}
       </div>
@@ -877,9 +878,10 @@ function renderGame2Host(container) {
         const isRevealed=revealed.includes(i);
         const isWrong=i===roundData.wrong_index;
         const isImg = typeof a === 'object' && a.image;
-          const inner = isRevealed && isWrong ? '❌' : isRevealed ? '✓'
-            : isImg ? `<img src="${a.image}" alt="">` : a;
-          return `<div class="j2-answer${isRevealed?' revealed':''}${isRevealed&&isWrong?' wrong':''}${isImg&&!isRevealed?' img-mode':''}" onclick="selectAnswer2(${i})">
+          const inner = isRevealed && isWrong ? '❌'
+            : isRevealed ? '✓'
+            : isImg ? `<img src="${a.image}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:0.6rem;display:block;background:var(--surface2)">` : a;
+          return `<div class="j2-answer${isRevealed?' revealed':''}${isRevealed&&isWrong?' wrong':''}${isImg?' img-mode':''}" onclick="${isRevealed?'':` selectAnswer2(${i})`}" style="${isRevealed?'pointer-events:none':''}">
             ${inner}
           </div>`;
       }).join('')}
@@ -1293,21 +1295,38 @@ function renderPlayerGame5(content, gs, data) {
     return;
   }
 
-  content.innerHTML = `<div class="player-question-card fade-in" style="align-items:center;gap:1.25rem">
+  const questions5 = QUESTIONS.game5 || [];
+  const Q5 = questions5[gs.questionIdx || 0];
+  const pct5 = Math.min(((palier) / PALIERS) * 100, 100);
+
+  content.innerHTML = `<div class="player-question-card fade-in" style="align-items:center;gap:1rem;padding:1.25rem">
     <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
       <div class="tag tag-gold">Jeu 5 · Qui est-ce ?</div>
       <div style="font-family:Bebas Neue;color:var(--gold)">${myScore} pts</div>
     </div>
+    ${Q5?.image_url ? `
+      <div style="position:relative;width:100%;border-radius:0.75rem;overflow:hidden;border:1px solid var(--border)">
+        <img src="${Q5.image_url}" style="width:100%;display:block;max-height:220px;object-fit:cover">
+        <div style="position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:2px;pointer-events:none">
+          ${Array.from({length:16}).map((_,i) => {
+            const revealed = i < Math.floor(palier * 16 / PALIERS);
+            return `<div style="background:${revealed?'transparent':'var(--bg)'};transition:background 0.5s ease ${(i%4)*0.05}s"></div>`;
+          }).join('')}
+        </div>
+      </div>` : ''}
+    <div style="width:100%;background:var(--surface2);border-radius:0.5rem;height:5px;overflow:hidden">
+      <div style="height:100%;background:var(--gold);width:${pct5}%;transition:width 1s"></div>
+    </div>
     <div style="text-align:center">
-      <div style="font-size:0.85rem;color:var(--muted)">Palier ${palier}/${PALIERS}</div>
-      <div style="font-family:Bebas Neue;font-size:1.3rem;color:var(--gold)">${PALIER_POINTS[palier]||1} pts si vous répondez maintenant</div>
+      <div style="font-size:0.8rem;color:var(--muted)">Palier ${palier}/${PALIERS}</div>
+      <div style="font-family:Bebas Neue;font-size:1.2rem;color:var(--gold)">${PALIER_POINTS[palier]||1} pts si vous répondez maintenant</div>
     </div>
     ${myResponse ? `
-      <div style="background:rgba(245,200,66,0.1);border:1px solid var(--gold);border-radius:0.75rem;padding:1rem;text-align:center;width:100%">
-        <div style="font-size:0.75rem;color:var(--muted)">Réponse envoyée au palier ${myResponse.palier+1}</div>
-        <div style="font-weight:600;font-size:1.1rem;margin-top:0.25rem">${myResponse.text}</div>
+      <div style="background:rgba(245,200,66,0.1);border:1px solid var(--gold);border-radius:0.75rem;padding:0.75rem;text-align:center;width:100%">
+        <div style="font-size:0.7rem;color:var(--muted)">Réponse envoyée au palier ${myResponse.palier+1}</div>
+        <div style="font-weight:600;font-size:1rem;margin-top:0.2rem">${myResponse.text}</div>
       </div>
-      <div style="color:var(--muted);font-size:0.85rem;text-align:center">⏳ L'hôte va valider…</div>
+      <div style="color:var(--muted);font-size:0.8rem;text-align:center">⏳ L'hôte va valider…</div>
     ` : `
       <input class="j3-input" id="g5-answer-input" placeholder="Qui est cette personne / ce lieu ?" autocomplete="off"
         onkeydown="if(event.key==='Enter') submitGame5Answer()">
@@ -1351,74 +1370,74 @@ function initGame6() {
   return { phase:'playing', questionIdx:0, responses:{}, validated:{} };
 }
 
-async function loadG6Audio(url) {
-  if (g6CurrentUrl === url && g6AudioBuffer) return g6AudioBuffer;
-  if (!g6AudioCtx) g6AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const resp = await fetch(url);
-  const arrayBuf = await resp.arrayBuffer();
-  g6AudioBuffer = await g6AudioCtx.decodeAudioData(arrayBuf);
-  g6CurrentUrl = url;
-  return g6AudioBuffer;
-}
+// Utilise <audio> HTML pour éviter les erreurs CORS avec Firebase Storage
+// Les effets playbackRate (pitch/vitesse) et noise sont appliqués via Web Audio sur le flux audio
+
+let g6AudioEl = null;
+let g6MediaSource = null;
 
 function stopG6Audio() {
-  try { g6AudioSource?.stop(); } catch(e) {}
+  if (g6AudioEl) { g6AudioEl.pause(); g6AudioEl.currentTime = 0; }
   try { g6NoiseSource?.stop(); } catch(e) {}
-  g6AudioSource = null; g6NoiseSource = null; g6IsPlaying = false;
+  g6NoiseSource = null; g6IsPlaying = false;
 }
 
 async function playG6WithEffect(url, effect) {
   stopG6Audio();
-  if (!g6AudioCtx) g6AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (g6AudioCtx.state === 'suspended') await g6AudioCtx.resume();
-  const buf = await loadG6Audio(url);
 
-  // Reverse: create reversed copy
-  let playBuf = buf;
+  // Créer ou réutiliser l'élément audio
+  if (!g6AudioEl || g6AudioEl.src !== url) {
+    g6AudioEl = new Audio();
+    g6AudioEl.crossOrigin = 'anonymous';
+    g6AudioEl.src = url;
+  }
+
+  // Appliquer playbackRate selon l'effet
+  if (effect === 'pitch_low')  g6AudioEl.playbackRate = 0.7;
+  else if (effect === 'pitch_high') g6AudioEl.playbackRate = 1.5;
+  else if (effect === 'slow')       g6AudioEl.playbackRate = 0.6;
+  else if (effect === 'fast')       g6AudioEl.playbackRate = 1.8;
+  else g6AudioEl.playbackRate = 1.0;
+
+  // Pour le reverse, on ne peut pas vraiment le faire sans fetch
+  // On simule avec un pitch très bas comme fallback
   if (effect === 'reverse') {
-    const reversed = g6AudioCtx.createBuffer(buf.numberOfChannels, buf.length, buf.sampleRate);
-    for (let ch = 0; ch < buf.numberOfChannels; ch++) {
-      const data = buf.getChannelData(ch).slice().reverse();
-      reversed.copyToChannel(data, ch);
-    }
-    playBuf = reversed;
+    g6AudioEl.playbackRate = 0.5;
   }
 
-  const src = g6AudioCtx.createBufferSource();
-  src.buffer = playBuf;
-
-  // Pitch shift via playbackRate (approximatif mais efficace)
-  if (effect === 'pitch_low')  src.playbackRate.value = 0.7;
-  if (effect === 'pitch_high') src.playbackRate.value = 1.5;
-  if (effect === 'slow')       src.playbackRate.value = 0.6;
-  if (effect === 'fast')       src.playbackRate.value = 1.8;
-
-  const gainNode = g6AudioCtx.createGain();
-  gainNode.gain.value = effect === 'noise' ? 0.6 : 1.0;
-  src.connect(gainNode);
-
-  // Noise layer
+  // Noise : ajouter via Web Audio connecté sur l'élément audio
   if (effect === 'noise') {
-    const bufSize = g6AudioCtx.sampleRate * 2;
-    const noiseBuf = g6AudioCtx.createBuffer(1, bufSize, g6AudioCtx.sampleRate);
-    const noiseData = noiseBuf.getChannelData(0);
-    for (let i = 0; i < bufSize; i++) noiseData[i] = (Math.random() * 2 - 1) * 0.4;
-    const noiseFilter = g6AudioCtx.createBiquadFilter();
-    noiseFilter.type = 'bandpass';
-    noiseFilter.frequency.value = 1000;
-    g6NoiseSource = g6AudioCtx.createBufferSource();
-    g6NoiseSource.buffer = noiseBuf;
-    g6NoiseSource.loop = true;
-    g6NoiseSource.connect(noiseFilter);
-    noiseFilter.connect(gainNode);
-    g6NoiseSource.start();
+    try {
+      if (!g6AudioCtx) g6AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (g6AudioCtx.state === 'suspended') await g6AudioCtx.resume();
+      if (!g6MediaSource) g6MediaSource = g6AudioCtx.createMediaElementSource(g6AudioEl);
+      const gainNode = g6AudioCtx.createGain();
+      gainNode.gain.value = 0.65;
+      g6MediaSource.connect(gainNode);
+      const bufSize = g6AudioCtx.sampleRate * 2;
+      const noiseBuf = g6AudioCtx.createBuffer(1, bufSize, g6AudioCtx.sampleRate);
+      const noiseData = noiseBuf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) noiseData[i] = (Math.random() * 2 - 1) * 0.35;
+      g6NoiseSource = g6AudioCtx.createBufferSource();
+      g6NoiseSource.buffer = noiseBuf;
+      g6NoiseSource.loop = true;
+      const noiseGain = g6AudioCtx.createGain();
+      noiseGain.gain.value = 0.4;
+      g6NoiseSource.connect(noiseGain);
+      noiseGain.connect(g6AudioCtx.destination);
+      gainNode.connect(g6AudioCtx.destination);
+      g6NoiseSource.start();
+    } catch(e) { console.warn('Web Audio noise failed:', e); }
   }
 
-  gainNode.connect(g6AudioCtx.destination);
-  src.start();
-  g6AudioSource = src;
-  g6IsPlaying = true;
-  src.onended = () => { g6IsPlaying = false; updateG6PlayBtn(); };
+  try {
+    await g6AudioEl.play();
+    g6IsPlaying = true;
+    g6AudioEl.onended = () => { g6IsPlaying = false; updateG6PlayBtn(); };
+  } catch(e) {
+    showToast('Erreur lecture audio', 'error');
+    g6IsPlaying = false;
+  }
 }
 
 function updateG6PlayBtn() {
@@ -1836,8 +1855,8 @@ function renderPlayerGame2(content, gs, data) {
           const rev=(gs.revealed||[]).includes(i); const iW=i===roundData?.wrong_index;
           const isImg = typeof a === 'object' && a.image;
           const inner = rev && iW ? '❌' : rev ? '✓'
-            : isImg ? `<img src="${a.image}" alt="">` : a;
-          return `<div class="j2-answer${rev?' revealed':''}${rev&&iW?' wrong':''}${isImg&&!rev?' img-mode':''}">
+            : isImg ? `<img src="${a.image}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:0.6rem;display:block;background:var(--surface2)">` : a;
+          return `<div class="j2-answer${rev?' revealed':''}${rev&&iW?' wrong':''}${isImg?' img-mode':''}">
             ${inner}
           </div>`;
         }).join('')}
