@@ -352,5 +352,3 @@ const QUESTIONS = {
       }
     ]
   }
-
-}
