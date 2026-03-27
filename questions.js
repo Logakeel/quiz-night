@@ -34,37 +34,37 @@ const QUESTIONS = {
         text: "Quelle année est sortie Dofus 2.0",
         media_url: null, media_type: null, image_only: false,
         answers: ["2009", "2004", "2008", "2012"],
-        correct: 1
+        correct: 0
       },
       {
         text: "Quel est le pokemon n°143",
         media_url: null, media_type: null, image_only: false,
         answers: ["Ronflex", "Artikodin", "Alakazam", "Kabutops"],
-        correct: 1
+        correct: 0
       },
       {
         text: "Quel est le niveau max dans Diablo 3 (hors extension)",
         media_url: null, media_type: null, image_only: false,
         answers: ["70", "60", "50", "100"],
-        correct: 2
+        correct: 1
       },
       {
         text: "Qui est ce personnage ?",
         media_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%201%2Fnico%20p1.png?alt=media&token=caaf6a2c-ec74-4410-aa57-68cd697538d2", media_type: "image", image_only: false,
         answers: ["Mussolini", "Resetti", "Taup Nook", "Keke"],
-        correct: 2
+        correct: 1
       },
       {
         text: "D'où vient ce son ?",
         media_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%201%2FQuizz%20Nico.wav?alt=media&token=7ba6b581-78c2-4d9d-9039-648e9abc8f93", media_type: "audio", image_only: false,
         answers: ["Animal Crossing", "Pokemon Ranger", "Neverwinter", "Diablo 3"],
-        correct: 2
+        correct: 1
       },
       {
         text: "Quel est le nom de scène de Jean-Chrysostome Dolto  ?",
         media_url: null, media_type: null, image_only: false,
         answers: ["Coluche", "Danny Boon", "Carlos", "Patrick Sébastien"],
-        correct: 3
+        correct: 2
       }
     ],
 
@@ -73,37 +73,37 @@ const QUESTIONS = {
         text: "Comment s'appelle ce personnage ?",
         media_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%201%2Ftoto%20p1.webp?alt=media&token=f0be6a20-7b6f-4c6a-8586-9fd4bd7d7d97", media_type: "image", image_only: false,
         answers: ["Oleg", "Pierce", "Shaundi", "Josh"],
-        correct: 1
+        correct: 0
       },
       {
         text: "D'où vient ce son ?",
         media_url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Jeu%201%2FQuizz%20Toto.wav?alt=media&token=857a9069-45c5-4c42-9837-8bd52b880776", media_type: "audio", image_only: false,
         answers: ["Overwatch", "Doom", "Helldivers 2", "Spiderman"],
-        correct: 1
+        correct: 0
       },
       {
         text: "Dans Baldur's Gate 3, Quelle est le bonus de race des humains ?",
         media_url: null, media_type: null, image_only: false,
         answers: ["Avantage de sagesse", "Vision Nocturne", "Avantage au charme", "+25% de limite de poids"],
-        correct: 4
+        correct: 3
       },
       {
         text: "Comment s'appelle le personnage principal de Shadow Warrior ?",
         media_url: null, media_type: null, image_only: false,
         answers: ["Yu Ping", "Lo Wang", "Ho Lee Fuk", "Fang Chu"],
-        correct: 2
+        correct: 1
       },
       {
         text: "Combien de Go faisait Skyrim à sa sortie sur xbox 360 ?",
         media_url: null, media_type: null, image_only: false,
         answers: ["7,5", "4,8", "12", "9,2"],
-        correct: 2
+        correct: 1
       },
       {
         text: "En quelle année est sorti le film Comment c'est loin ?",
         media_url: null, media_type: null, image_only: false,
         answers: ["2014", "2017", "2015", "2016"],
-        correct: 3
+        correct: 2
       }
     ],
 
@@ -112,37 +112,37 @@ const QUESTIONS = {
         text: "En quelle année est sorti le premier album de Sabaton ?",
         media_url: null, media_type: null, image_only: false,
         answers: ["2005", "2003", "2008", "2007"],
-        correct: 1
+        correct: 0
       },
       {
         text: "Quel est le nom complet d'Oceiros (Dark souls 3)",
         media_url: null, media_type: null, image_only: false,
         answers: ["Le Roi Illuminé", "Le Gardien de l'Enfant", "Le Roi Lion", "Le Roi Maudit"],
-        correct: 1
+        correct: 0
       },
       {
         text: "Qui est ce personnage ?",
         media_url: null, media_type: null, image_only: false,
         answers: ["Rondine", "Fiorayne", "Chichae", "Minayle"],
-        correct: 2
+        correct: 1
       },
       {
         text: "Quel est ce son",
         media_url: null, media_type: null, image_only: false,
         answers: ["Feu de Dark souls 1", "Lieu découvert Elden Ring", "Attribut dans Skyrim", "Pouvoir God of War"],
-        correct: 1
+        correct: 0
       },
       {
         text: "Quelle est la fiche d'une Modification de formule tarifaire d’acheminement ou de puissance souscrite [BT ≤ 36 kVA",
         media_url: null, media_type: null, image_only: false,
         answers: ["F120", "F170", "F180", "F800"],
-        correct: 3
+        correct: 2
       },
       {
         text: "Dans Pokemon, le type Glace ne résiste qu'a un seul type, lequel ?",
         media_url: null, media_type: null, image_only: false,
         answers: ["Feu", "Plante", "Roche", "Glace"],
-        correct: 4
+        correct: 3
       }
     ]
   },
@@ -161,13 +161,13 @@ const QUESTIONS = {
       question: "Quel jeu est sorti en 2018 ?",
       media_url: null, media_type: null,
       answers: ["AC Odyssey","DragonBall FighterZ","Days Gone","MH World","Sea of Thieves","Warhammer : Vermintide 2","Super Smash Bros. Ultimate","Stardew Valley","Dead Cells"],
-      wrong_index: 3
+      wrong_index: 2
     },
     {
       question: "Quel film vient du studio Pixar ?",
       media_url: null, media_type: null,
       answers: ["Toy Story","Cars","Ratatouille","Wall-E","Là-haut","Shrek","Monstres & compagnie","Vice-Versa","Coco"],
-      wrong_index: 6
+      wrong_index: 5
     },
     {
       question: "Quelle association est correcte ?",
