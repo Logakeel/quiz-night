@@ -18,7 +18,7 @@ const AVATARS = [
   { name: "Nico",   url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Avatars%2Fnico.png?alt=media&token=8cdbb989-2e94-40f7-b809-5d4e18eb598d" },
   { name: "Toto",     url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Avatars%2Ftoto.png?alt=media&token=d6e1bc15-9a3c-4ec9-a3b8-7bba6cc4f9c2" },
   { name: "Guigui",    url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Avatars%2Fguigui.png?alt=media&token=a784a4ba-6195-4cb8-9fc3-6ba7f5a438a4" },
-  { name: "Dan",     url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Avatars%2Fbrave_XGG8JTPUZP.png?alt=media&token=380c4c01-a934-47fd-b804-736d961250a3" },
+  { name: "Dan",     url: "https://firebasestorage.googleapis.com/v0/b/quizzgamers-a15dd.firebasestorage.app/o/Avatars%2Fbrave_XGG8JTPUZP.png?alt=media&token=380c4c01-a934-47fd-b804-736d961250a3" }
 ];
 
 const QUESTIONS = {
@@ -65,7 +65,7 @@ const QUESTIONS = {
         media_url: null, media_type: null, image_only: false,
         answers: ["Coluche", "Danny Boon", "Carlos", "Patrick Sébastien"],
         correct: 3
-      },
+      }
     ],
 
     "Set Toto": [
@@ -104,7 +104,7 @@ const QUESTIONS = {
         media_url: null, media_type: null, image_only: false,
         answers: ["2014", "2017", "2015", "2016"],
         correct: 3
-      },
+      }
     ],
 
     "Set Guigui": [
@@ -126,7 +126,7 @@ const QUESTIONS = {
         answers: ["Rondine", "Fiorayne", "Chichae", "Minayle"],
         correct: 2
       },
-       {
+      {
         text: "Quel est ce son",
         media_url: null, media_type: null, image_only: false,
         answers: ["Feu de Dark souls 1", "Lieu découvert Elden Ring", "Attribut dans Skyrim", "Pouvoir God of War"],
@@ -143,7 +143,7 @@ const QUESTIONS = {
         media_url: null, media_type: null, image_only: false,
         answers: ["Feu", "Plante", "Roche", "Glace"],
         correct: 4
-      },
+      }
     ]
   },
     
@@ -217,7 +217,7 @@ const QUESTIONS = {
           { text: "Film avec Mufasa ?",                 answer: "Le Roi Lion"    },
           { text: "Studio derrière Toy Story ?",        answer: "Pixar"          },
           { text: "Acteur principal de Forrest Gump ?", answer: "Tom Hanks"      },
-          { text: "Saga avec la Force et des Jedi ?",   answer: "Star Wars"      },
+          { text: "Saga avec la Force et des Jedi ?",   answer: "Star Wars"      }
         ]
       },
       {
@@ -228,7 +228,7 @@ const QUESTIONS = {
           { text: "Instrument d'Elton John ?",             answer: "Piano"           },
           { text: "Daft Punk vient de quel pays ?",        answer: "France"          },
           { text: "Chanteur de Thriller ?",                answer: "Michael Jackson" },
-          { text: "Groupe des Beatles originaire de ?",    answer: "Liverpool"       },
+          { text: "Groupe des Beatles originaire de ?",    answer: "Liverpool"       }
         ]
       },
       {
@@ -239,7 +239,7 @@ const QUESTIONS = {
           { text: "Sport avec des balais sur glace ?",         answer: "Curling"      },
           { text: "JO d'été 2024 ?",                           answer: "Paris"        },
           { text: "Sets pour gagner à Wimbledon ?",            answer: "3 sets sur 5" },
-          { text: "Couleur maillot leader Tour de France ?",   answer: "Jaune"        },
+          { text: "Couleur maillot leader Tour de France ?",   answer: "Jaune"        }
         ]
       },
       {
@@ -250,7 +250,7 @@ const QUESTIONS = {
           { text: "Continent du Maroc ?",       answer: "Afrique"       },
           { text: "Plus long fleuve du monde ?",answer: "Nil / Amazone" },
           { text: "Capitale du Canada ?",       answer: "Ottawa"        },
-          { text: "Pays en forme de botte ?",   answer: "Italie"        },
+          { text: "Pays en forme de botte ?",   answer: "Italie"        }
         ]
       },
       {
@@ -261,7 +261,7 @@ const QUESTIONS = {
           { text: "Vitesse de la lumière ?",            answer: "300 000 km/s" },
           { text: "Nombre d'os dans le corps humain ?", answer: "206"          },
           { text: "Formule de l'eau ?",                 answer: "H2O"          },
-          { text: "Qui a découvert la pénicilline ?",   answer: "Fleming"      },
+          { text: "Qui a découvert la pénicilline ?",   answer: "Fleming"      }
         ]
       },
       {
@@ -271,11 +271,11 @@ const QUESTIONS = {
           { text: "Fromage de la pizza Margherita ?",    answer: "Mozzarella" },
           { text: "Pays d'origine des sushis ?",         answer: "Japon"      },
           { text: "Plat national espagnol ?",            answer: "Paella"     },
-          { text: "Épice la plus chère du monde ?",      answer: "Safran"     },
+          { text: "Épice la plus chère du monde ?",      answer: "Safran"     }
         ]
       }
     ]
-  };
+  },
   // ══════════════════════════════════════════════════════════
   // JEU 5 — QUI EST-CE ?
   // image_url : URL de l'image (Firebase Storage ou autre)
@@ -351,5 +351,4 @@ const QUESTIONS = {
     }
   ]
 
- 
 };
