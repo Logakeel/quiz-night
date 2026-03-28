@@ -312,7 +312,7 @@ const db = getDatabase(app);
 
 let STATE = { roomCode:null, isHost:false, playerId:null, playerName:null, players:{}, currentGame:0, gameState:{}, avatarIdx:0 };
 const EMOJIS = ['🦁','🐯','🦊','🐺','🦝','🐻','🐼','🦄'];
-const GAMES = ['Duo/Carré/Cash','L\'Intrus','Sprint de réponses','4 à la suite','Qui est-ce ?','Quel est ce son ?'];
+const GAMES = ['Duo/Carré/Cash','L\'Intrus','Sprint de réponses','4 à la suite','Qui est-ce ?'];
 let currentAudio = null;
 
 function generateCode() { return 'QUIZ-'+Math.random().toString(36).substr(2,4).toUpperCase(); }
@@ -442,7 +442,7 @@ function updateLobbyUI(data) {
     <div style="font-family:Bebas Neue;color:#f5c842;font-size:0.85rem;margin-bottom:0.5rem">🛠️ DEV — Lancer directement</div>
     <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
       ${[1,2,3,4].map(n=>`<button onclick="devJumpTo(${n})" style="padding:0.35rem 0.7rem;border-radius:0.5rem;border:1px solid #2a2a3d;background:#0a0a0f;color:#6b6b88;cursor:pointer;font-family:Bebas Neue;font-size:0.9rem">J${n}</button>`).join('')}
-      <button onclick="devJumpTo(7)" style="padding:0.35rem 0.7rem;border-radius:0.5rem;border:1px solid #2a2a3d;background:#0a0a0f;color:#6b6b88;cursor:pointer;font-family:Bebas Neue;font-size:0.9rem">🏆</button>
+      <button onclick="devJumpTo(6)" style="padding:0.35rem 0.7rem;border-radius:0.5rem;border:1px solid #2a2a3d;background:#0a0a0f;color:#6b6b88;cursor:pointer;font-family:Bebas Neue;font-size:0.9rem">🏆</button>
     </div>
   `;
 }
@@ -556,7 +556,7 @@ function renderHostGame() {
   show('game-screen');
   const g=STATE.currentGame;
   const gs=STATE.gameState;
-  document.getElementById('game-index-display').textContent=g<=6?g:'🏆';
+  document.getElementById('game-index-display').textContent=g<=5?g:'🏆';
   document.getElementById('game-title').textContent=gs.phase==='scoreboard'?'SCORES':GAMES[g-1]||'QUIZ NIGHT';
   renderHeaderScores();
   renderDevPanel();
@@ -567,8 +567,7 @@ function renderHostGame() {
   else if (g===3) renderGame3Host(content);
   else if (g===4) renderGame4Host(content);
   else if (g===5) renderGame5Host(content);
-  else if (g===6) renderGame6Host(content);
-  else if (g===7) renderFinalScoreboard(content);
+  else if (g===6) renderFinalScoreboard(content);
   else renderFinalScoreboard(content);
 }
 
@@ -583,8 +582,8 @@ function renderDevPanel() {
   }
   panel.innerHTML = `
     <div style="font-family:Bebas Neue;color:#f5c842;font-size:0.85rem;width:100%;margin-bottom:0.25rem">🛠️ DEV — Aller au jeu</div>
-    ${[1,2,3,4,5,6].map(n=>`<button onclick="devJumpTo(${n})" style="padding:0.35rem 0.7rem;border-radius:0.5rem;border:1px solid ${STATE.currentGame===n?'#f5c842':'#2a2a3d'};background:${STATE.currentGame===n?'rgba(245,200,66,0.15)':'#0a0a0f'};color:${STATE.currentGame===n?'#f5c842':'#6b6b88'};cursor:pointer;font-family:Bebas Neue;font-size:0.9rem">J${n}</button>`).join('')}
-    <button onclick="devJumpTo(7)" style="padding:0.35rem 0.7rem;border-radius:0.5rem;border:1px solid #2a2a3d;background:#0a0a0f;color:#6b6b88;cursor:pointer;font-family:Bebas Neue;font-size:0.9rem">🏆</button>
+    ${[1,2,3,4,5].map(n=>`<button onclick="devJumpTo(${n})" style="padding:0.35rem 0.7rem;border-radius:0.5rem;border:1px solid ${STATE.currentGame===n?'#f5c842':'#2a2a3d'};background:${STATE.currentGame===n?'rgba(245,200,66,0.15)':'#0a0a0f'};color:${STATE.currentGame===n?'#f5c842':'#6b6b88'};cursor:pointer;font-family:Bebas Neue;font-size:0.9rem">J${n}</button>`).join('')}
+    <button onclick="devJumpTo(6)" style="padding:0.35rem 0.7rem;border-radius:0.5rem;border:1px solid #2a2a3d;background:#0a0a0f;color:#6b6b88;cursor:pointer;font-family:Bebas Neue;font-size:0.9rem">🏆</button>
   `;
 }
 
@@ -606,7 +605,6 @@ window.devJumpTo = async function(gameNum) {
   else if (gameNum===3) gs=initGame3();
   else if (gameNum===4) gs=initGame4();
   else if (gameNum===5) gs=initGame5();
-  else if (gameNum===6) gs=initGame6();
   await update(dbRef(rp()), { status:'playing', currentGame:gameNum, gameState:gs });
   showToast(`→ Jeu ${gameNum}`, 'success');
 };
@@ -641,7 +639,6 @@ window.launchNextGame = async function(next) {
   else if (next===3) gs=initGame3();
   else if (next===4) gs=initGame4();
   else if (next===5) gs=initGame5();
-  else if (next===6) gs=initGame6();
   await update(dbRef(rp()),{ currentGame:next, gameState:gs });
 }
 
@@ -1346,277 +1343,12 @@ window.submitGame5Answer = async function() {
 };
 
 // ══════════════════════════════════════
-// JEU 6 : QUEL EST CE SON ?
-// Web Audio API — effets appliqués à la volée
-// ══════════════════════════════════════
-
-const AUDIO_EFFECTS = {
-  reverse:    { label: '⏪ À l\'envers',        desc: 'La chanson est jouée à l\'envers' },
-  pitch_low:  { label: '👾 Voix grave',          desc: 'Pitch descendu de 5 demi-tons' },
-  pitch_high: { label: '🐿️ Voix aiguë',         desc: 'Pitch monté de 5 demi-tons' },
-  slow:       { label: '🐢 Ralenti (0.6x)',      desc: 'Vitesse réduite à 60%' },
-  fast:       { label: '🐇 Accéléré (1.8x)',     desc: 'Vitesse augmentée à 180%' },
-  noise:      { label: '📻 Bruit de fond',       desc: 'Bruit blanc par-dessus l\'extrait' },
-};
-
-let g6AudioCtx = null;
-let g6AudioSource = null;
-let g6NoiseSource = null;
-let g6AudioBuffer = null;
-let g6IsPlaying = false;
-let g6CurrentUrl = null;
-
-function initGame6() {
-  return { phase:'playing', questionIdx:0, responses:{}, validated:{} };
-}
-
-// Utilise <audio> HTML pour éviter les erreurs CORS avec Firebase Storage
-// Les effets playbackRate (pitch/vitesse) et noise sont appliqués via Web Audio sur le flux audio
-
-let g6AudioEl = null;
-let g6MediaSource = null;
-
-function stopG6Audio() {
-  if (g6AudioEl) { g6AudioEl.pause(); g6AudioEl.currentTime = 0; }
-  try { g6NoiseSource?.stop(); } catch(e) {}
-  g6NoiseSource = null; g6IsPlaying = false;
-}
-
-async function playG6WithEffect(url, effect) {
-  stopG6Audio();
-
-  // Créer ou réutiliser l'élément audio
-  if (!g6AudioEl || g6AudioEl.src !== url) {
-    g6AudioEl = new Audio();
-    g6AudioEl.crossOrigin = 'anonymous';
-    g6AudioEl.src = url;
-  }
-
-  // Appliquer playbackRate selon l'effet
-  if (effect === 'pitch_low')  g6AudioEl.playbackRate = 0.7;
-  else if (effect === 'pitch_high') g6AudioEl.playbackRate = 1.5;
-  else if (effect === 'slow')       g6AudioEl.playbackRate = 0.6;
-  else if (effect === 'fast')       g6AudioEl.playbackRate = 1.8;
-  else g6AudioEl.playbackRate = 1.0;
-
-  // Pour le reverse, on ne peut pas vraiment le faire sans fetch
-  // On simule avec un pitch très bas comme fallback
-  if (effect === 'reverse') {
-    g6AudioEl.playbackRate = 0.5;
-  }
-
-  // Noise : ajouter via Web Audio connecté sur l'élément audio
-  if (effect === 'noise') {
-    try {
-      if (!g6AudioCtx) g6AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (g6AudioCtx.state === 'suspended') await g6AudioCtx.resume();
-      if (!g6MediaSource) g6MediaSource = g6AudioCtx.createMediaElementSource(g6AudioEl);
-      const gainNode = g6AudioCtx.createGain();
-      gainNode.gain.value = 0.65;
-      g6MediaSource.connect(gainNode);
-      const bufSize = g6AudioCtx.sampleRate * 2;
-      const noiseBuf = g6AudioCtx.createBuffer(1, bufSize, g6AudioCtx.sampleRate);
-      const noiseData = noiseBuf.getChannelData(0);
-      for (let i = 0; i < bufSize; i++) noiseData[i] = (Math.random() * 2 - 1) * 0.35;
-      g6NoiseSource = g6AudioCtx.createBufferSource();
-      g6NoiseSource.buffer = noiseBuf;
-      g6NoiseSource.loop = true;
-      const noiseGain = g6AudioCtx.createGain();
-      noiseGain.gain.value = 0.4;
-      g6NoiseSource.connect(noiseGain);
-      noiseGain.connect(g6AudioCtx.destination);
-      gainNode.connect(g6AudioCtx.destination);
-      g6NoiseSource.start();
-    } catch(e) { console.warn('Web Audio noise failed:', e); }
-  }
-
-  try {
-    await g6AudioEl.play();
-    g6IsPlaying = true;
-    g6AudioEl.onended = () => { g6IsPlaying = false; updateG6PlayBtn(); };
-  } catch(e) {
-    showToast('Erreur lecture audio', 'error');
-    g6IsPlaying = false;
-  }
-}
-
-function updateG6PlayBtn() {
-  const btn = document.getElementById('g6-play-btn');
-  if (btn) btn.textContent = g6IsPlaying ? '⏹ STOP' : '▶ JOUER';
-}
-
-function renderGame6Host(container) {
-  const gs = STATE.gameState;
-  const questions = QUESTIONS.game6 || [];
-  const Q = questions[gs.questionIdx || 0];
-
-  if (!Q) {
-    container.innerHTML = `<div class="section-title">FIN DU JEU 6</div>
-      <button class="btn btn-primary" style="max-width:300px" onclick="nextGame()">RÉSULTATS →</button>`;
-    return;
-  }
-
-  const effect = Q.effect || 'pitch_low';
-  const effectInfo = AUDIO_EFFECTS[effect] || {};
-  const responses = gs.responses || {};
-  const validated = gs.validated || {};
-  const qNum = (gs.questionIdx || 0) + 1;
-
-  if (gs.phase === 'reveal') {
-    container.innerHTML = `
-      <div class="section-title fade-in">🎵 ${Q.answer}</div>
-      ${Q.artist ? `<div style="color:var(--muted);font-size:1rem">${Q.artist}</div>` : ''}
-      <button class="btn btn-secondary btn-sm" id="g6-play-btn" onclick="toggleG6Audio('${Q.audio_url}','${effect}')">▶ RÉÉCOUTER (original)</button>
-      <div style="width:100%;max-width:500px">
-        ${Object.entries(responses).map(([pid,r]) => {
-          const p = STATE.players[pid]; const v = validated[pid];
-          return `<div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 1rem;background:var(--surface);border-radius:0.5rem;margin-bottom:0.4rem;border:1px solid ${v===true?'var(--green)':v===false?'var(--red)':'var(--border)'}">
-            <span>${p?.emoji||'?'}</span>
-            <span style="flex:1;font-weight:500">${p?.name||pid}</span>
-            <span style="color:var(--muted);font-size:0.85rem;flex:2">${r.text}</span>
-            <span style="font-family:Bebas Neue;font-size:1.1rem;color:${v===true?'var(--green)':v===false?'var(--red)':'var(--muted)'}">${v===true?'+3 pts':v===false?'✗':'?'}</span>
-            ${v===undefined?`
-              <button class="btn btn-green btn-sm" style="padding:0.3rem 0.6rem;font-size:0.8rem;width:auto" onclick="validateGame6('${pid}',true)">✓</button>
-              <button class="btn btn-red btn-sm" style="padding:0.3rem 0.6rem;font-size:0.8rem;width:auto" onclick="validateGame6('${pid}',false)">✗</button>`:''}
-          </div>`;
-        }).join('') || '<div style="color:var(--muted);text-align:center">Aucune réponse</div>'}
-      </div>
-      <button class="btn btn-primary" style="max-width:300px" onclick="nextGame6Question()">
-        ${qNum < questions.length ? 'CHANSON SUIVANTE →' : 'TERMINER LE JEU →'}
-      </button>
-    `;
-    return;
-  }
-
-  container.innerHTML = `
-    <div class="section-title fade-in">🎵 QUEL EST CE SON ?</div>
-    <div class="instruction">Chanson ${qNum}/${questions.length}</div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:1rem;padding:1.5rem 2rem;text-align:center;width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;gap:1rem">
-      <div style="font-size:2.5rem">🎵</div>
-      <div style="font-family:Bebas Neue;font-size:1.2rem;color:var(--gold)">${effectInfo.label || effect}</div>
-      <div style="font-size:0.8rem;color:var(--muted)">${effectInfo.desc || ''}</div>
-      <button class="btn btn-primary btn-sm" id="g6-play-btn" onclick="toggleG6Audio('${Q.audio_url}','${effect}')">▶ JOUER L'EXTRAIT</button>
-    </div>
-    <div style="width:100%;max-width:500px">
-      <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem;text-align:center">
-        Réponses reçues : ${Object.keys(responses).length}/${Object.keys(STATE.players).length}
-      </div>
-      ${Object.entries(responses).map(([pid,r]) => {
-        const p = STATE.players[pid];
-        return `<div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0.75rem;background:var(--surface);border-radius:0.5rem;margin-bottom:0.3rem">
-          <span>${p?.emoji||'?'}</span>
-          <span style="flex:1">${p?.name||pid}</span>
-          <span style="background:rgba(245,200,66,0.15);color:var(--gold);padding:0.2rem 0.6rem;border-radius:0.3rem;font-size:0.85rem">${r.text}</span>
-        </div>`;
-      }).join('') || '<div style="color:var(--muted);font-size:0.85rem;text-align:center">En attente des réponses…</div>'}
-    </div>
-    <button class="btn btn-primary btn-sm" onclick="revealGame6Answer()">🎯 RÉVÉLER LA RÉPONSE</button>
-  `;
-}
-
-window.toggleG6Audio = async function(url, effect) {
-  const btn = document.getElementById('g6-play-btn');
-  if (g6IsPlaying) {
-    stopG6Audio();
-    if (btn) btn.textContent = '▶ JOUER L\'EXTRAIT';
-  } else {
-    if (btn) btn.textContent = '⏳ Chargement…';
-    try {
-      await playG6WithEffect(url, effect);
-      if (btn) btn.textContent = '⏹ STOP';
-    } catch(e) {
-      showToast('Erreur audio — vérifiez l\'URL', 'error');
-      if (btn) btn.textContent = '▶ JOUER L\'EXTRAIT';
-    }
-  }
-};
-
-window.revealGame6Answer = async function() {
-  stopG6Audio();
-  await update(dbRef(rp()), { gameState: { ...STATE.gameState, phase: 'reveal' } });
-};
-
-window.validateGame6 = async function(pid, correct) {
-  const gs = STATE.gameState;
-  const validated = { ...(gs.validated||{}), [pid]: correct };
-  if (correct) await addScore(pid, 3);
-  await update(dbRef(rp()), { gameState: { ...gs, validated } });
-};
-
-window.nextGame6Question = async function() {
-  stopG6Audio();
-  const gs = STATE.gameState;
-  const questions = QUESTIONS.game6 || [];
-  const nextIdx = (gs.questionIdx || 0) + 1;
-  if (nextIdx >= questions.length) { await nextGame(); return; }
-  await update(dbRef(rp()), { gameState: { phase:'playing', questionIdx:nextIdx, responses:{}, validated:{} } });
-};
-
-// ── PLAYER GAME 6 ──
-function renderPlayerGame6(content, gs, data) {
-  const myResponse = gs.responses?.[STATE.playerId];
-  const validated = gs.validated?.[STATE.playerId];
-  const myScore = data.players?.[STATE.playerId]?.score || 0;
-  const questions = QUESTIONS.game6 || [];
-  const Q = questions[gs.questionIdx || 0];
-  const effect = Q?.effect || 'pitch_low';
-  const effectInfo = AUDIO_EFFECTS[effect] || {};
-
-  if (gs.phase === 'reveal') {
-    content.innerHTML = `<div class="player-question-card fade-in" style="align-items:center;gap:1rem;text-align:center">
-      <div class="tag tag-gold">Jeu 6 · Quel est ce son ?</div>
-      <div style="font-size:2rem">🎵</div>
-      ${myResponse
-        ? `<div style="color:var(--muted);font-size:0.9rem">Votre réponse : <strong style="color:var(--text)">${myResponse.text}</strong></div>
-           <div style="font-family:Bebas Neue;font-size:1.5rem;color:${validated===true?'var(--green)':validated===false?'var(--red)':'var(--muted)'}">
-             ${validated===true?'✅ +3 pts !':validated===false?'❌ Raté':'⏳ Validation…'}
-           </div>`
-        : '<div style="color:var(--muted)">Pas de réponse soumise</div>'
-      }
-      <div style="font-family:Bebas Neue;color:var(--gold)">${myScore} pts au total</div>
-    </div>`;
-    return;
-  }
-
-  content.innerHTML = `<div class="player-question-card fade-in" style="align-items:center;gap:1.25rem">
-    <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
-      <div class="tag tag-gold">Jeu 6 · Quel est ce son ?</div>
-      <div style="font-family:Bebas Neue;color:var(--gold)">${myScore} pts</div>
-    </div>
-    <div style="text-align:center;background:var(--surface2);border-radius:0.75rem;padding:1rem;width:100%">
-      <div style="font-size:1.5rem">🎵</div>
-      <div style="font-family:Bebas Neue;color:var(--gold);font-size:1rem;margin-top:0.25rem">${effectInfo.label||''}</div>
-      <div style="font-size:0.75rem;color:var(--muted)">L'hôte joue l'extrait sur son écran</div>
-    </div>
-    ${myResponse
-      ? `<div style="background:rgba(245,200,66,0.1);border:1px solid var(--gold);border-radius:0.75rem;padding:1rem;text-align:center;width:100%">
-           <div style="font-size:0.75rem;color:var(--muted)">Réponse envoyée</div>
-           <div style="font-weight:600;font-size:1.1rem;margin-top:0.25rem">${myResponse.text}</div>
-         </div>
-         <div style="color:var(--muted);font-size:0.85rem;text-align:center">⏳ En attente de validation…</div>`
-      : `<input class="j3-input" id="g6-answer-input" placeholder="Titre ou artiste…" autocomplete="off"
-           onkeydown="if(event.key==='Enter') submitGame6Answer()">
-         <button class="btn btn-primary" onclick="submitGame6Answer()">ENVOYER MA RÉPONSE</button>`
-    }
-  </div>`;
-}
-
-window.submitGame6Answer = async function() {
-  const input = document.getElementById('g6-answer-input');
-  const val = input?.value?.trim();
-  if (!val) return;
-  const gs = STATE.gameState;
-  const responses = { ...(gs.responses||{}), [STATE.playerId]: { text: val } };
-  await update(dbRef(rp()), { gameState: { ...gs, responses } });
-};
-
-// ══════════════════════════════════════
 // SCOREBOARD INTERMÉDIAIRE
 // ══════════════════════════════════════
 function renderIntermediateScoreboard(container, nextGameNum) {
   const sorted = getPlayersSorted();
   const medals = ['🥇','🥈','🥉','4️⃣'];
-  const gameNames = ["","Duo/Carré/Cash","L'Intrus","Sprint de réponses","4 à la suite","Qui est-ce ?","Quel est ce son ?"];
+  const gameNames = ["","Duo/Carré/Cash","L'Intrus","Sprint de réponses","4 à la suite","Qui est-ce ?"];
   const prevGame = (nextGameNum||2) - 1;
 
   container.innerHTML=`
@@ -1672,9 +1404,8 @@ function renderPlayerView(data) {
   }
   // Scoreboard intermédiaire entre les jeux
   if (gs.phase==='scoreboard') { renderPlayerScoreboard(content, data, gs.nextGame); return; }
-  if (game===7) { renderPlayerFinal(content, data); return; }
+  if (game===6) { renderPlayerFinal(content, data); return; }
   if (game===5) renderPlayerGame5(content,gs,data);
-  else if (game===6) renderPlayerGame6(content,gs,data);
   if (game===1) renderPlayerGame1(content,gs,data);
   else if (game===2) renderPlayerGame2(content,gs,data);
   else if (game===3) renderPlayerGame3(content,gs,data);
@@ -1754,7 +1485,7 @@ function renderPlayerScoreboard(content, data, nextGameNum) {
   const myPid = STATE.playerId;
   const myRank = players.findIndex(p=>p.id===myPid)+1;
   const medals = ['🥇','🥈','🥉','4️⃣'];
-  const gameNames = ["","Duo/Carré/Cash","L'Intrus","Sprint de réponses","4 à la suite","Qui est-ce ?","Quel est ce son ?"];
+  const gameNames = ["","Duo/Carré/Cash","L'Intrus","Sprint de réponses","4 à la suite","Qui est-ce ?"];
   const prevGame = (nextGameNum||2)-1;
 
   content.innerHTML=`<div class="player-question-card fade-in" style="gap:1rem">
