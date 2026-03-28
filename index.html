@@ -150,6 +150,12 @@
   .score-player-name { flex:1; font-weight:500; }
   .score-pts-big { font-family:'Bebas Neue'; font-size:1.5rem; color:var(--gold); }
 
+  /* ── PLAYER SCORE BAR ── */
+  .player-score-bar { background:var(--surface); border-bottom:1px solid var(--border); padding:0.6rem 1.25rem; display:flex; gap:1rem; align-items:center; justify-content:center; flex-wrap:wrap; width:100%; flex-shrink:0; }
+  .player-score-chip { display:flex; align-items:center; gap:0.4rem; background:var(--surface2); border:1px solid var(--border); border-radius:2rem; padding:0.3rem 0.75rem; font-size:0.8rem; }
+  .player-score-chip.me { border-color:var(--gold); background:rgba(245,200,66,0.1); }
+  .player-score-chip .pts { font-family:'Bebas Neue'; font-size:1rem; color:var(--gold); }
+
   /* ── PLAYER ── */
   .player-waiting { text-align:center; }
   .player-waiting-icon { font-size:4rem; animation:bounce 2s infinite; }
@@ -252,8 +258,11 @@
 </div>
 
 <!-- PLAYER -->
-<div id="player-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;gap:1.5rem">
-  <div id="player-content"></div>
+<div id="player-screen" style="display:none;flex-direction:column;align-items:center;min-height:100vh">
+  <div id="player-score-bar" class="player-score-bar" style="display:none"></div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:1.5rem;width:100%">
+    <div id="player-content"></div>
+  </div>
 </div>
 
 <script src="questions.js"></script>
@@ -337,19 +346,80 @@ function renderMedia(media_url, media_type, compact=false) {
     </div>`;
   }
   if (media_type === 'audio') {
-    const id = 'audio-'+Math.random().toString(36).substr(2,5);
+    // ID stable basé sur l'URL pour synchronisation Firebase
+    const id = 'audio-' + btoa(media_url).replace(/[^a-z0-9]/gi,'').substr(0,8);
+    const isHost = STATE.isHost;
     return `<div class="media-container">
       <div class="audio-player">
-        <button class="audio-play-btn" id="btn-${id}" onclick="toggleAudio('${id}','${media_url}')">▶</button>
+        ${isHost
+          ? `<button class="audio-play-btn" id="btn-${id}" onclick="hostToggleAudio('${id}','${media_url}')">▶</button>`
+          : `<button class="audio-play-btn" id="btn-${id}" disabled style="opacity:0.5;cursor:default">▶</button>`
+        }
         <div style="flex:1;display:flex;flex-direction:column;gap:0.4rem">
-          <div class="audio-label">🎵 Extrait audio — cliquez pour écouter</div>
+          <div class="audio-label">${isHost ? '🎵 Cliquez pour jouer aux joueurs' : '🎵 L\'hôte contrôle la lecture'}</div>
           <div class="audio-progress"><div class="audio-progress-fill" id="prog-${id}"></div></div>
         </div>
       </div>
-      <audio id="${id}" src="${media_url}" preload="none"></audio>
+      <audio id="${id}" src="${media_url}" preload="auto"></audio>
     </div>`;
   }
   return '';
+}
+
+// Hôte contrôle l'audio — synchronisé via Firebase
+window.hostToggleAudio = async function(id, url) {
+  const audio = document.getElementById(id);
+  if (!audio) return;
+  const isPlaying = !audio.paused;
+  // Stocker l'état dans Firebase pour les joueurs
+  await update(dbRef(rp()), {
+    audioState: isPlaying ? null : { url, playing: true, t: Date.now() }
+  });
+  // Jouer/stopper localement
+  if (isPlaying) {
+    audio.pause(); audio.currentTime = 0;
+    document.getElementById('btn-'+id)?.classList.remove('playing');
+    document.getElementById('btn-'+id).textContent = '▶';
+    document.querySelectorAll('.audio-progress-fill').forEach(p=>p.style.width='0%');
+  } else {
+    if (currentAudio && currentAudio !== audio) { currentAudio.pause(); currentAudio.currentTime=0; }
+    audio.play();
+    currentAudio = audio;
+    const btn = document.getElementById('btn-'+id);
+    if (btn) { btn.textContent='⏸'; btn.classList.add('playing'); }
+    const prog = document.getElementById('prog-'+id);
+    audio.ontimeupdate = ()=>{ if(audio.duration && prog) prog.style.width=`${(audio.currentTime/audio.duration)*100}%`; };
+    audio.onended = async ()=>{
+      if (btn) { btn.textContent='▶'; btn.classList.remove('playing'); }
+      if (prog) prog.style.width='0%';
+      await update(dbRef(rp()), { audioState: null });
+    };
+  }
+};
+
+// Joueurs : réagissent au changement d'audioState Firebase
+function handleAudioState(audioState) {
+  if (!audioState?.url || !audioState?.playing) {
+    // Stopper tout audio en cours
+    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime=0; currentAudio=null; }
+    document.querySelectorAll('.audio-play-btn').forEach(b=>{ b.textContent='▶'; b.classList.remove('playing'); });
+    document.querySelectorAll('.audio-progress-fill').forEach(p=>p.style.width='0%');
+    return;
+  }
+  const id = 'audio-' + btoa(audioState.url).replace(/[^a-z0-9]/gi,'').substr(0,8);
+  const audio = document.getElementById(id);
+  if (!audio || !audio.paused) return;
+  audio.play().then(()=>{
+    currentAudio = audio;
+    const btn = document.getElementById('btn-'+id);
+    if (btn) { btn.textContent='⏸'; btn.classList.add('playing'); }
+    const prog = document.getElementById('prog-'+id);
+    audio.ontimeupdate = ()=>{ if(audio.duration && prog) prog.style.width=`${(audio.currentTime/audio.duration)*100}%`; };
+    audio.onended = ()=>{
+      if (btn) { btn.textContent='▶'; btn.classList.remove('playing'); }
+      if (prog) prog.style.width='0%';
+    };
+  }).catch(()=>{});
 }
 
 window.toggleAudio = function(id, url) {
@@ -423,6 +493,7 @@ function listenToRoom() {
     if (STATE.isHost) {
       if (data.status==='lobby') updateLobbyUI(data); else { show('game-screen'); renderHostGame(); }
     } else {
+      if (!STATE.isHost) handleAudioState(data.audioState||null);
       renderPlayerView(data);
     }
   });
@@ -1398,6 +1469,24 @@ function renderPlayerView(data) {
   const content=document.getElementById('player-content');
   show('player-screen');
 
+  // Mettre à jour la barre de scores
+  const scoreBar = document.getElementById('player-score-bar');
+  if (scoreBar) {
+    if (data.status==='lobby') {
+      scoreBar.style.display = 'none';
+    } else {
+      scoreBar.style.display = 'flex';
+      const sorted = Object.entries(data.players||{}).map(([id,p])=>({id,...p})).sort((a,b)=>b.score-a.score);
+      scoreBar.innerHTML = sorted.map(p =>
+        `<div class="player-score-chip${p.id===STATE.playerId?' me':''}">
+          <span>${p.emoji}</span>
+          <span>${p.name}</span>
+          <span class="pts">${p.score}</span>
+        </div>`
+      ).join('');
+    }
+  }
+
   if (data.status==='lobby') {
     renderPlayerLobby(content, data);
     return;
@@ -1427,7 +1516,7 @@ function renderPlayerLobby(content, data) {
     : '';
 
   content.innerHTML=`
-    <div class="player-question-card fade-in" style="align-items:center;gap:1.5rem;text-align:center">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1.5rem;text-align:center;width:100%;max-width:380px">
       <div style="font-family:Bebas Neue;font-size:1.5rem;color:var(--gold)">CHOISISSEZ VOTRE AVATAR</div>
       <div class="avatar-picker">
         <button class="avatar-arrow" onclick="changeAvatar(-1)">◀</button>
